@@ -27,6 +27,17 @@ function App() {
       })
   }, [])
 
+  useEffect(() => {
+    const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
+    if (loggedUserJSON) {
+      // dari string -> objek
+      const user = JSON.parse(loggedUserJSON)
+      setUser(user)
+      // penting: aktifkan token di service
+      blogServices.setToken(user.token)
+    }
+  },[])
+
   const addNew = (event) => {
     event.preventDefault()
     const newObject = {
@@ -95,6 +106,15 @@ function App() {
     try {
       const loggedUser = await loginService.login({ username, password })
 
+      // 1) simpan sesi ke storage (stringify itu wajib)
+      window.localStorage.setItem(
+        'loggedBlogappUser',
+        JSON.stringify(loggedUser)
+      )
+
+      // 2) aktifkan token di service (agar requrest protected jalan)
+      blogServices.setToken(loggedUser.token)
+
       setUser(loggedUser)   //  pindahkan UI ke state "logged in"
       setUsername('')       // bersihkan form
       setPassword('')
@@ -133,6 +153,11 @@ function App() {
     </form>
   )
 
+  const handleLogout = () => {
+    window.localStorage.removeItem('loggedBlogappUser')
+    setUser(null)
+  }
+
   return (
     <div>
       <Notification message={errorMessage} type="error" /> {/*  tampilkan notifikasi di atas */}
@@ -143,6 +168,7 @@ function App() {
         {user && (
           <div>
             <p><strong>{user.name || user.username}</strong> logged in</p>
+            <button onClick={handleLogout}>logout</button>
           </div>
         )}
       </div>
