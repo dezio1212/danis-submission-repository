@@ -1,16 +1,26 @@
-export default function Notification({ message, type = 'info' }) {
-    if (!message) return null
-  const color =
-    type === 'error' ? '#dc2626' : type === 'success' ? '#16a34a' : '#2563eb'
+export default function Notification({ notice }) {
+  if (!notice || !notice.text) return null
+
+  const palette = {
+    success: '#10b981', // hijau
+    error:   '#ef4444', // merah
+    info:    '#3b82f6', // biru
+  }
+  const color = palette[notice.type] || palette.info
+
   return (
-    <div style={{
-      margin: '12px 0',
-      padding: '8px 12px',
-      border: `1px solid ${color}`,
-      color,
-      borderRadius: 6,
-    }}>
-      {message}
+    <div
+      role="alert"
+      aria-live="polite"
+      style={{
+        margin: '12px 0',
+        padding: '10px 12px',
+        border: `1px solid ${color}`,
+        color,
+        borderRadius: 6,
+      }}
+    >
+      {notice.text}
     </div>
   )
 }

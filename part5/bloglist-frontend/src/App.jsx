@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import blogServices from '../services/blogs'
 import BlogItem from '../components/BlogItem'
 import BlogForm from '../components/BlogForm'
@@ -11,7 +11,22 @@ function App() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-  const [errorMessage, setErrorMessage] = useState(null)  //  tambahkan
+  const [errorMessage, setErrorMessage] = useState(null) 
+
+  const [notice, setNotice] = useState(null)
+  const noticeTimerRef = useRef(null)
+
+  const showNotice = (text, type = 'info', ms = 4000) => {
+    if (noticeTimerRef.current) {
+      clearTimeout(noticeTimerRef.current)
+      noticeTimerRef.current = null
+    }
+    setNotice({ text, type }) 
+    noticeTimerRef.current = setTimeout(() => {
+      setNotice(null)
+      noticeTimerRef.current = null
+    }, ms)
+  }
 
   useEffect(() => {
     blogServices
@@ -36,6 +51,9 @@ function App() {
       // penting: aktifkan token di service
       blogServices.setToken(user.token)
     }
+    return () => {
+      if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current)
+    }
   },[])
 
   const addNew = (event) => {
@@ -52,12 +70,12 @@ function App() {
       .create(newObject)
       .then(returnedBlog => {
         setBlogs(prev => prev.concat(returnedBlog))  //  gunakan bentuk fungsional
+        showNotice(`Blog " ${newObject.title}" added`, 'succes')
         setNewBlog('')
       })
       .catch((err) => {
         console.error(err)
-        setErrorMessage('failed to create blog')
-        setTimeout(() => setErrorMessage(null), 4000)
+        showNotice('Failed to add blog', 'error')
       })
   }
 
@@ -118,11 +136,10 @@ function App() {
       setUser(loggedUser)   //  pindahkan UI ke state "logged in"
       setUsername('')       // bersihkan form
       setPassword('')
+
+      showNotice(`Welcome, ${loggedUser.name || loggedUser.username}!`, 'success')
     } catch (e) {
-      // Pastikan error message muncul
-      const msg = e?.response?.data?.error || e?.message || 'wrong credentials'
-      setErrorMessage(msg)  //  tampilkan
-      setTimeout(() => setErrorMessage(null), 5000)
+      showNotice('Wrong credentials', 'error')
     }
   }
 
@@ -160,7 +177,7 @@ function App() {
 
   return (
     <div>
-      <Notification message={errorMessage} type="error" /> {/*  tampilkan notifikasi di atas */}
+      <Notification notice={notice} />
 
       <div className='container loginForm'>
         {!user && loginForm()}
