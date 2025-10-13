@@ -12,9 +12,10 @@ const getAll = () => {
     return request.then(response => response.data)
 }
 
-const create = newBlog => {
-    const request = axios.post(baseUrl, newBlog)
-    return request.then(response => response.data)
+const create = async (newBlog) => {
+    const config = token ? { headers: { Authorization: token } } : {}
+    const { data } = await axios.post(baseUrl, newBlog, config)
+    return data
 }
 const updateUpvotes = (id, newCount) => {
     const request = axios.patch(`${baseUrl}/${id}`, { upvotes: newCount })
