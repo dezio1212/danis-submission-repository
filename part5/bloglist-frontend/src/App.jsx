@@ -8,12 +8,10 @@ import Togglable from '../components/Togglable'
 
 function App() {
   const [blogs, setBlogs] = useState([])
-  const [newBlog, setNewBlog] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-  const [errorMessage, setErrorMessage] = useState(null) 
-
+  const [errorMessage, setErrorMessage] = useState(null)
   const [notice, setNotice] = useState(null)
 
   const noticeTimerRef = useRef(null)
@@ -24,7 +22,7 @@ function App() {
       clearTimeout(noticeTimerRef.current)
       noticeTimerRef.current = null
     }
-    setNotice({ text, type }) 
+    setNotice({ text, type })
     noticeTimerRef.current = setTimeout(() => {
       setNotice(null)
       noticeTimerRef.current = null
@@ -48,55 +46,35 @@ function App() {
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
     if (loggedUserJSON) {
-      // dari string -> objek
       const user = JSON.parse(loggedUserJSON)
       setUser(user)
-      // penting: aktifkan token di service
       blogServices.setToken(user.token)
     }
     return () => {
       if (noticeTimerRef.current) clearTimeout(noticeTimerRef.current)
     }
-  },[])
+  }, [])
 
-  const addNew = (event) => {
-    event.preventDefault()
-    if (blogFormRef.current) blogFormRef.current.toggleVisibility()
-    const newObject = {
-      // Untuk 5.1 fokus login; id sebaiknya biar server yang set
-      title: newBlog,
-      author: 'danis',
-      url: 'trial.com',
-      upvotes: 0, // catatan: jika backend pakai "likes", sesuaikan nanti
+  // terima payload objek dari BlogForm
+  const addBlog = async (blogObject) => {
+    try {
+      const created = await blogServices.create(blogObject)
+      setBlogs(prev => prev.concat(created))
+      // Tutup form setelah sukses submit
+      if (blogFormRef.current) blogFormRef.current.toggleVisibility()
+      showNotice(`Blog "${created.title}" added`, 'success')
+    } catch (err) {
+      console.error(err)
+      showNotice('Failed to add blog', 'error')
     }
-    blogServices
-      .create(newObject)
-      .then(returnedBlog => {
-        setBlogs(prev => prev.concat(returnedBlog))  //  gunakan bentuk fungsional
-        showNotice(`Blog " ${newObject.title}" added`, 'succes')
-        setNewBlog('')
-      })
-      .catch((err) => {
-        console.error(err)
-        showNotice('Failed to add blog', 'error')
-      })
-  }
-
-  const handleInputChange = (event) => {
-    setNewBlog(event.target.value)
   }
 
   const handleUpvote = (id, currentUpvotes) => {
     blogServices
       .updateUpvotes(id, currentUpvotes + 1)
       .then((returned) => {
-        const newUpvotes = typeof returned === 'number'
-          ? returned
-          : returned.upvotes
-
-        setBlogs(prev =>
-          prev.map(b => (b.id === id ? { ...b, upvotes: newUpvotes } : b))
-        )
+        const newUpvotes = typeof returned === 'number' ? returned : returned.upvotes
+        setBlogs(prev => prev.map(b => (b.id === id ? { ...b, upvotes: newUpvotes } : b)))
       })
       .catch((err) => {
         console.error(err)
@@ -113,7 +91,7 @@ function App() {
     blogServices
       .remove(id)
       .then(() => {
-        setBlogs(prev => prev.filter(b => b.id !== id))  //  bentuk fungsional
+        setBlogs(prev => prev.filter(b => b.id !== id))
       })
       .catch((err) => {
         console.error(err)
@@ -126,20 +104,11 @@ function App() {
     event.preventDefault()
     try {
       const loggedUser = await loginService.login({ username, password })
-
-      // 1) simpan sesi ke storage (stringify itu wajib)
-      window.localStorage.setItem(
-        'loggedBlogappUser',
-        JSON.stringify(loggedUser)
-      )
-
-      // 2) aktifkan token di service (agar requrest protected jalan)
+      window.localStorage.setItem('loggedBlogappUser', JSON.stringify(loggedUser))
       blogServices.setToken(loggedUser.token)
-
-      setUser(loggedUser)   //  pindahkan UI ke state "logged in"
-      setUsername('')       // bersihkan form
+      setUser(loggedUser)
+      setUsername('')
       setPassword('')
-
       showNotice(`Welcome, ${loggedUser.name || loggedUser.username}!`, 'success')
     } catch (e) {
       showNotice('Wrong credentials', 'error')
@@ -184,7 +153,6 @@ function App() {
 
       <div className='container loginForm'>
         {!user && loginForm()}
-
         {user && (
           <div>
             <p><strong>{user.name || user.username}</strong> logged in</p>
@@ -193,18 +161,13 @@ function App() {
         )}
       </div>
 
-      {/* 5.1: Konten utama (form tambah + list) hanya muncul saat sudah login */}
       {user && (
         <div className="container stack">
           <section className="card">
             <h2>Tambah Blog Baru</h2>
             <p className="mb-2">Title:</p>
             <Togglable buttonLabel="create new blog" ref={blogFormRef}>
-              <BlogForm
-                addNew={addNew}
-                newBlog={newBlog}
-                handleInputChange={handleInputChange}
-              />
+              <BlogForm createBlog={addBlog} />
             </Togglable>
           </section>
 
