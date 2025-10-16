@@ -4,6 +4,7 @@ import BlogItem from '../components/BlogItem'
 import BlogForm from '../components/BlogForm'
 import loginService from '../services/login'
 import Notification from '../components/Notification'
+import Togglable from '../components/Togglable'
 
 function App() {
   const [blogs, setBlogs] = useState([])
@@ -14,7 +15,9 @@ function App() {
   const [errorMessage, setErrorMessage] = useState(null) 
 
   const [notice, setNotice] = useState(null)
+
   const noticeTimerRef = useRef(null)
+  const blogFormRef = useRef()
 
   const showNotice = (text, type = 'info', ms = 4000) => {
     if (noticeTimerRef.current) {
@@ -58,6 +61,7 @@ function App() {
 
   const addNew = (event) => {
     event.preventDefault()
+    if (blogFormRef.current) blogFormRef.current.toggleVisibility()
     const newObject = {
       // Untuk 5.1 fokus login; id sebaiknya biar server yang set
       title: newBlog,
@@ -65,7 +69,6 @@ function App() {
       url: 'trial.com',
       upvotes: 0, // catatan: jika backend pakai "likes", sesuaikan nanti
     }
-
     blogServices
       .create(newObject)
       .then(returnedBlog => {
@@ -196,11 +199,13 @@ function App() {
           <section className="card">
             <h2>Tambah Blog Baru</h2>
             <p className="mb-2">Title:</p>
-            <BlogForm
-              addNew={addNew}
-              newBlog={newBlog}
-              handleInputChange={handleInputChange}
-            />
+            <Togglable buttonLabel="create new blog" ref={blogFormRef}>
+              <BlogForm
+                addNew={addNew}
+                newBlog={newBlog}
+                handleInputChange={handleInputChange}
+              />
+            </Togglable>
           </section>
 
           <section className="card">
