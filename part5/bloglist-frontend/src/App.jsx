@@ -29,12 +29,18 @@ function App() {
     }, ms)
   }
 
+  const getLikes = (b) => (typeof b.upvotes === 'number' ? b.upvotes
+                        : typeof b.likes === 'number'   ? b.likes
+                        : 0)
+
+  const sortBlogs = (arr) => [...arr].sort((a, b) => getLikes(b) - getLikes(a))
+
   useEffect(() => {
     blogServices
       .getAll()
       .then(data => {
         const list = Array.isArray(data) ? data : (Array.isArray(data?.blogs) ? data.blogs : [])
-        setBlogs(list)
+        setBlogs(sortBlogs(list))
       })
       .catch(error => {
         console.log('Gagal mengambil data:', error)
@@ -59,7 +65,7 @@ function App() {
   const addBlog = async (blogObject) => {
     try {
       const created = await blogServices.create(blogObject)
-      setBlogs(prev => prev.concat(created))
+      setBlogs(prev => sortBlogs(prev.concat(created)))
       // Tutup form setelah sukses submit
       if (blogFormRef.current) blogFormRef.current.toggleVisibility()
       showNotice(`Blog "${created.title}" added`, 'success')
@@ -89,7 +95,7 @@ function App() {
       user: prevBlog.user,
 
     }
-     setBlogs(prev => prev.map(b => (b.id === id ? enriched : b)))
+     setBlogs(prev => sortBlogs(prev.map(b => (b.id === id ? enriched : b))))
     } catch (err) {
      console.error(err)
      setErrorMessage('failed to upvote')
