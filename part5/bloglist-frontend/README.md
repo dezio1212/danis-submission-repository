@@ -1,251 +1,208 @@
-# Bloglist Frontend — Part 5 (Fullstack Open)
+# Bloglist Frontend — Fullstack Open Part 5
 
-Frontend application for **Part 5** exercises: user **authentication (login)**, using a **JWT token** for protected requests, **session persistence** with `localStorage`, and **user notifications** (success/failure).
+A React (Vite) frontend for the Bloglist application built in **Fullstack Open, Part 5**.
+This project covers authentication, session persistence, protected API calls, notifications, component composition with `props.children`, controlling components via `ref`, like updates (PUT), stable user display after updates, sorting by likes, owner-only removal, PropTypes, and ESLint.
 
-## 🎯 Learning Goals
+## ✅ Progress (Exercises Covered)
 
-* **5.1**: Add a **login form** and basic authentication logic.
-* **5.2**: **Persist login** using `localStorage` + add **Logout**.
-* **5.3**: Send **Authorization: Bearer <token>** when creating new data.
-* **5.4**: Show **notifications** to give user feedback on success/failure.
-
-## 🧱 Stack
-
-* **React** (Vite/CRA) with Hooks (`useState`, `useEffect`)
-* **Axios** for HTTP requests
-* **Local Storage** for session persistence
-* (Optional) **ESLint** for linting
-
-## 📁 Project Structure (overview)
-
-```
-bloglist-frontend/
-├─ src/
-│  ├─ components/
-│  │  ├─ LoginForm.jsx
-│  │  └─ Notification.jsx
-│  ├─ services/
-│  │  ├─ login.js        # POST /api/login
-│  │  └─ notes.js | blogs.js
-│  ├─ App.jsx
-│  └─ main.jsx
-├─ public/
-├─ .gitignore            # make sure node_modules, build output, etc. are ignored
-└─ package.json
-```
-
-## 🔌 Backend Prerequisites
-
-Ensure the Part 4 backend is running and provides:
-
-* `POST /api/login` → returns `{ token, username, name, ... }`
-* `GET /api/notes` or `GET /api/blogs`
-* `POST /api/notes` or `POST /api/blogs` (requires **Bearer token**)
-
-Adjust your service `baseUrl` (`/api/...`) to match your dev environment/proxy settings.
-
-## 🚀 Run Locally
-
-```bash
-# install dependencies
-npm install
-
-# start dev server
-npm run dev
-```
-
-Open the URL shown in the terminal (e.g., `http://localhost:5173`).
-
-## 🔐 Authentication Flow (short)
-
-1. User submits the login form → frontend calls `POST /api/login`.
-2. Response includes a `token` + user info → save to React state and **localStorage**.
-3. Call `setToken(token)` in the data service layer.
-4. Every `create()` (POST) automatically sends:
-
-   ```
-   Authorization: Bearer <token>
-   ```
-5. On refresh, a `useEffect` **restores** the user from `localStorage` and calls `setToken` again.
-6. Logout → remove the localStorage item and reset `user` state.
-
-## ✨ Key Features
-
-* **Login Form** with controlled inputs.
-* **Conditional Rendering**:
-
-  * Not logged in → show login form.
-  * Logged in → show main content + create form.
-* **Persistence**: stores `loggedNoteappUser` in `localStorage` + restores on load.
-* **Protected Create**: adds **Authorization** header in `axios.post`.
-* **Notifications**: shows success/error messages that **auto-hide**.
-
-## ⚙️ Common NPM Scripts
-
-```bash
-npm run dev        # development server
-npm run build      # production build
-npm run preview    # preview the build locally
-```
-
-## ✅ Self-Check (per exercise)
-
-* **5.1**: Valid credentials → “logged in” UI; invalid → brief error message.
-* **5.2**: After login, refresh → still logged in; Logout → back to login form.
-* **5.3**: While logged in, creating data works; request **includes Authorization** header.
-* **5.4**: Success/failure actions show notifications that disappear automatically.
-
-## 🛠️ Troubleshooting
-
-* **401 on create()** → ensure `setToken(user.token)` is called after login **and** again when restoring from `localStorage`.
-* **Login form not visible** → verify conditional rendering (`!user && ...`) and ensure the helper actually **returns** JSX (use `return (...)` or `(...)`).
-* **CRLF/LF warnings on Windows** → you can set:
-
-  ```bash
-  git config core.autocrlf true   # or 'input'
-  ```
-
-## 🔒 Security Note
-
-Storing tokens in `localStorage` is common but exposed to **XSS risks**. An alternative is **httpOnly cookies** (more resistant to XSS but more complex—consider CSRF). Regardless of storage, **mitigate XSS** (sanitize inputs, use CSP, etc.).
-
-## 📦 Submission Structure (important)
-
-Follow the instructor’s repository layout:
-
-```
-part5/
-  bloglist-frontend/
-    (entire React project, WITHOUT node_modules)
-```
-
-## 📄 License
-
-This project is for educational purposes following Fullstack Open materials.
----
-
-# Bloglist Frontend — Part 5 (Fullstack Open)
-
-Aplikasi frontend untuk latihan **Part 5**: autentikasi (login), penggunaan **JWT token** pada request yang dilindungi, **persist sesi** dengan `localStorage`, dan **notifikasi** (sukses/gagal).
-
-## 🎯 Tujuan Pembelajaran
-
-* 5.1: Menambahkan **login form** dan logika dasar autentikasi.
-* 5.2: **Persist login** menggunakan `localStorage` + tombol **Logout**.
-* 5.3: Mengirim **Authorization: Bearer <token>** saat membuat data baru.
-* 5.4: Menampilkan **notifikasi** untuk feedback user (sukses/gagal).
+* **5.1–5.4** – Login flow, JWT storage in `localStorage`, attaching `Authorization` header, and basic notifications.
+* **5.5** – Show the “Create new blog” form **only when needed** using a reusable **`Togglable`** component.
+* **5.6** – **State of the forms**: move input state into the form component (`BlogForm`), parent receives only the submit payload.
+* **5.7** – Per-blog **view/hide** details via local state inside `Blog` (not via `Togglable`).
+* **5.8** – **Like** button works: send `PUT /api/blogs/:id`, update local state without reload.
+* **5.9** – After liking, **preserve `user` object** in UI: enrich `PUT` response with the old `user` so `user.name` remains visible.
+* **5.10** – **Sort blogs by like count** (descending) after load, create, like, and (optionally) remove.
+* **5.11** – **Remove** button only visible to the **creator** of a blog + **PropTypes** for key components.
+* **5.12** – **ESLint** added with a Part-5-friendly config and handy npm scripts.
 
 ## 🧱 Tech Stack
 
-* **React** (Vite/CRA) + Hooks (`useState`, `useEffect`)
-* **Axios** untuk HTTP request
-* **Local Storage** untuk persistensi sesi
-* (Opsional) **ESLint** untuk linting
+* **React** (Vite) + Hooks (`useState`, `useEffect`, `useRef`)
+* **Axios** for HTTP
+* **LocalStorage** for session persistence
+* **PropTypes** for runtime prop validation
+* **ESLint** for code quality (React + hooks rules, project style)
 
-## 📁 Struktur Proyek (ringkas)
+## 📁 Project Structure (concise)
 
 ```
 bloglist-frontend/
 ├─ src/
 │  ├─ components/
-│  │  ├─ LoginForm.jsx
+│  │  ├─ Blog.jsx              # one blog: view/hide, like, (owner-only) remove
+│  │  ├─ BlogItem.jsx          # list mapper -> Blog
+│  │  ├─ BlogForm.jsx          # internal state (title/author/url), calls createBlog()
+│  │  ├─ Togglable.jsx         # reusable show/hide wrapper (props.children + forwardRef)
 │  │  └─ Notification.jsx
 │  ├─ services/
-│  │  ├─ login.js        # POST /api/login
-│  │  └─ notes.js|blogs.js
+│  │  ├─ login.js
+│  │  └─ blogs.js              # getAll, create, updateLikes/updateUpvotes, setToken
 │  ├─ App.jsx
 │  └─ main.jsx
-├─ public/
-├─ .gitignore            # pastikan node_modules, build, dsb di-ignore
-└─ package.json
+├─ .eslintrc.cjs               # ESLint config (exercise 5.12)
+├─ .eslintignore
+├─ package.json
+└─ vite.config.js
 ```
 
-## 🔌 Prasyarat Backend
+## 🔌 Backend Expectations
 
-* Backend (Part 4) berjalan dan menyediakan endpoint:
+A working Part-4 backend exposes:
 
-  * `POST /api/login` → mengembalikan `{ token, username, name, ... }`
-  * `GET /api/notes` atau `GET /api/blogs`
-  * `POST /api/notes` atau `POST /api/blogs` (membutuhkan **Bearer token**)
-* Atur `baseUrl` di service (`/api/...`) sesuai proxy/dev server Bos.
+* `POST /api/login` → `{ token, username, name, ... }`
+* `GET /api/blogs`
+* `POST /api/blogs` (requires `Authorization: Bearer <token>`)
+* `PUT /api/blogs/:id` (updates **likes**; project also supports a **upvotes** naming variant)
+* `DELETE /api/blogs/:id` (authorized: only creator can remove)
 
-## 🚀 Menjalankan Secara Lokal
+> Some backends return/require `user` as an **id string** for `PUT`. The frontend re-enriches the `user` field after updates so UI can still show `user.name`.
+
+## ⚙️ Configuration
+
+* `blogs.js` uses `baseUrl = '/api/blogs'`. Adjust proxy or base URL if needed.
+* After successful login, **always call**:
+
+  ```js
+  blogService.setToken(user.token)
+  ```
+
+  so subsequent requests include `Authorization: Bearer <token>`.
+
+## 🚀 Getting Started
 
 ```bash
-# install dependencies
 npm install
-
-# jalankan dev server
 npm run dev
 ```
 
-Buka `http://localhost:5173` (atau sesuai port yang tertera di terminal).
+Open the printed local URL (e.g., `http://localhost:5173`).
 
-## 🔐 Alur Autentikasi (ringkas)
+## 🔐 Login Flow (brief)
 
-1. User login → frontend memanggil `POST /api/login`.
-2. Respons berisi `token` + info user → disimpan ke state & **localStorage**.
-3. Frontend memanggil `setToken(token)` di service data.
-4. Setiap `create()` (POST) otomatis menyertakan header:
+1. Submit credentials → `POST /api/login`.
+2. Save `{ token, ... }` to component state and **`localStorage`** under `loggedBlogappUser`.
+3. Call `blogService.setToken(token)`.
+4. On refresh, restore session from `localStorage` and re-set token.
+5. Logout clears `localStorage` and resets UI to logged-out state.
 
-   ```
-   Authorization: Bearer <token>
-   ```
-5. Saat refresh, `useEffect` mem-**restore** `user` dari `localStorage` dan memanggil `setToken` lagi.
-6. Logout → hapus item `localStorage` dan reset state `user`.
+## ✨ Key Features per Exercise
 
-## ✨ Fitur Utama
+* **5.5 — `Togglable` (`props.children`)**
+  The “create new blog” form is wrapped in `Togglable` → default **hidden**, opens with a button, and exposes a **cancel** button.
+  `Togglable` uses **`forwardRef` + `useImperativeHandle`** so parent can call `ref.current.toggleVisibility()`.
 
-* **Login Form** dengan controlled inputs.
-* **Conditional Rendering**:
+* **5.6 — Form State**
+  `BlogForm` holds its own inputs (`title`, `author`, `url`) and calls a `createBlog(payload)` callback on submit.
 
-  * Belum login → tampil form login.
-  * Sudah login → tampil konten + form tambah data.
-* **Persistensi**: `localStorage` (`loggedNoteappUser`) + auto-restore (`useEffect`).
-* **Protected Create**: header **Authorization** pada `axios.post`.
-* **Notifications**: pesan sukses/gagal yang **auto-hide**.
+* **5.7 — Per-Item Details**
+  `Blog` has a local `expanded` state and toggles additional info (URL, likes, user, remove button).
 
-## ⚙️ Script NPM (contoh umum)
+* **5.8 — Like**
+  The like button performs `PUT /api/blogs/:id`, increments like count, and updates state instantly.
 
-```bash
-npm run dev        # jalankan development server
-npm run build      # produk build
-npm run preview    # pratinjau hasil build
-```
+* **5.9 — Preserve `user`**
+  When a backend returns `user` as an id on `PUT`, the frontend merges the old `user` object back:
 
-## 🧪 Uji Mandiri (checklist)
-
-* 5.1: Submit kredensial benar → UI menampilkan “logged in”; salah → pesan error singkat.
-* 5.2: Login → refresh halaman → tetap login; Logout → kembali ke form login.
-* 5.3: Setelah login, menambah data → berhasil; request POST menyertakan `Authorization`.
-* 5.4: Aksi sukses/gagal → muncul notifikasi → hilang otomatis.
-
-## 🛠️ Troubleshooting
-
-* **401 saat create()**: pastikan `setToken(user.token)` dipanggil setelah login **dan** saat restore dari `localStorage`.
-* **Form login tidak muncul**: periksa render kondisional (`!user && ...`) dan helper **mengembalikan JSX** (gunakan `return (...)` atau `(...)`).
-* **CRLF/LF warnings (Windows)**: set auto EOL bila perlu:
-
-  ```bash
-  git config core.autocrlf true   # atau input
+  ```js
+  const enriched = { ...saved, user: oldBlog.user }
   ```
 
-## 🔒 Catatan Keamanan
+  ensuring `user.name` remains visible.
 
-Menyimpan token di `localStorage` **mudah** tapi berisiko jika terjadi **XSS**. Alternatif: **httpOnly cookies** (lebih aman terhadap XSS, setup lebih kompleks—perlu mitigasi CSRF). Apa pun modelnya, pertahanan XSS tetap krusial.
+* **5.10 — Sorting**
+  Blogs are **sorted by likes (desc)** after load, create, like, and optionally delete:
 
-## 📦 Submission Notes (Repo Struktur)
+  ```js
+  const getLikes = (b) => b.upvotes ?? b.likes ?? 0
+  const sortBlogs = (arr) => [...arr].sort((a, b) => getLikes(b) - getLikes(a))
+  ```
 
-Sesuai template instruktur:
+* **5.11 — Owner-Only Remove + PropTypes**
+  Show the **remove** button only for the currently logged-in user who created the blog (compare `username` or `user.id`).
+  Add **PropTypes** for `Blog`, `BlogItem`, `BlogForm`, and `Togglable`.
 
+* **5.12 — ESLint**
+  ESLint is configured for React + hooks and a simple style aligned with Part 5.
+
+## 🧹 ESLint (exercise 5.12)
+
+Install:
+
+```bash
+npm i -D eslint eslint-plugin-react eslint-plugin-react-hooks
+# optional:
+npm i -D eslint-plugin-import eslint-plugin-jsx-a11y eslint-plugin-unused-imports
 ```
-part5/
-  bloglist-frontend/
-    (seluruh source, TANPA node_modules)
+
+`.eslintrc.cjs` (excerpt):
+
+```js
+module.exports = {
+  root: true,
+  env: { browser: true, es2021: true, jest: true },
+  extends: ['eslint:recommended', 'plugin:react/recommended'],
+  parserOptions: { ecmaVersion: 'latest', sourceType: 'module', ecmaFeatures: { jsx: true } },
+  settings: { react: { version: 'detect' } },
+  plugins: ['react', 'react-hooks'],
+  rules: {
+    semi: ['error', 'never'],
+    quotes: ['error', 'single'],
+    eqeqeq: 'error',
+    'no-trailing-spaces': 'error',
+    'object-curly-spacing': ['error', 'always'],
+    'arrow-spacing': ['error', { before: true, after: true }],
+    'react/prop-types': 0,
+    'react/react-in-jsx-scope': 0,
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'warn',
+    'no-console': 'off',
+  },
+}
 ```
 
-## 📄 Lisensi
+Scripts:
 
-Materi berdasarkan Fullstack Open — gunakan untuk keperluan pembelajaran.
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint --ext .js,.jsx src",
+    "lint:fix": "eslint --ext .js,.jsx src --fix"
+  }
+}
+```
 
---
+Run:
+
+```bash
+npm run lint
+npm run lint:fix
+```
+
+## 🧠 Implementation Notes
+
+* **likes vs upvotes**: the UI supports both (`b.upvotes ?? b.likes ?? 0`). Align with your backend field name.
+* **PUT body**: some backends expect a **full blog object** when updating likes. Keep other fields intact and send `user` as an **id**, not an object.
+* **`Togglable` refs**: use `forwardRef` and `useImperativeHandle` to expose `toggleVisibility()`.
+* **Owner check**: compare `blog.user.username` with `currentUser.username`, or `blog.user` id with `currentUser.id/_id`.
+
+## 🧪 Manual Checklist
+
+* Login → authenticated state; refresh → session persists; logout → back to login.
+* “Create new blog” toggles open/close; after create, form auto-closes.
+* “View/Hide” reveals details; “Like” increments and re-sorts list; user name remains visible.
+* Remove button shows **only** for the blog owner; confirm before deletion.
+
+## 🗺️ Next Steps
+
+* Part 5 testing (Unit/Integration/E2E).
+* Harden notification UX, loading states, and error handling.
+* Optional UI polish and accessibility improvements.
+
+## 📄 License
+
+For learning purposes following **Fullstack Open**.
+
+---
