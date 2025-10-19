@@ -24,7 +24,7 @@ const updateUpvotes = async (id, updated) =>
 (await axios.put(`${baseUrl}/${id}`, updated, auth())).data
 
 const remove = (id) => {
-    const request = axios.delete(`${baseUrl}/${id}`)
+    const request = axios.delete(`${baseUrl}/${id}`, auth())
     return request.then(response => response.data)
 }
 
