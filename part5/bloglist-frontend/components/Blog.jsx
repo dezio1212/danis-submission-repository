@@ -1,7 +1,7 @@
 // src/components/Blog.jsx
 import { useState } from 'react'
 
-export default function Blog({ blog, onLike, onDelete }) {
+export default function Blog({ blog, onLike, onDelete, currentUser}) {
   const [expanded, setExpanded] = useState(false)
   const toggle = () => setExpanded(v => !v)
 
@@ -14,6 +14,16 @@ export default function Blog({ blog, onLike, onDelete }) {
   }
 
   const likesValue = blog.upvotes ?? blog.likes ?? 0
+
+  const userObj  = typeof blog.user === 'object' ? blog.user : null
+  const userId   = userObj?.id || userObj?._id || (typeof blog.user === 'string' ? blog.user : null)
+  const meId     = currentUser?.id || currentUser?._id || null
+  const meUser   = currentUser?.username
+  const ownerUser= userObj?.username
+
+  const canRemove =
+    (ownerUser && meUser && ownerUser === meUser) ||
+    (userId && meId && userId === meId)
 
   return (
     <div style={blogStyle} className="blog">
@@ -34,7 +44,7 @@ export default function Blog({ blog, onLike, onDelete }) {
           {blog.user && (
             <div>{blog.user.name || blog.user.username}</div>
           )}
-          {onDelete && (
+          {onDelete && canRemove && (
             <button onClick={() => onDelete(blog.id)}>remove</button>
           )}
         </div>

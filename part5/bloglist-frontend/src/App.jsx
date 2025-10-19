@@ -197,6 +197,7 @@ function App() {
               blogs={blogs}
               onUpVote={handleUpvote}
               onDelete={handleRemove}
+              currentUser={user}
             />
           </section>
         </div>
