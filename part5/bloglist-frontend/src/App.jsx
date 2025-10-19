@@ -71,10 +71,25 @@ function App() {
 
   const handleUpvote = async (id, currentUpvotes) => {
   try {
-     const payload = { upvotes: Number(currentUpvotes) + 1 } // pastikan number
-     const updated = await blogServices.updateUpvotes(id, payload) // { upvotes: n }
-     // server mengembalikan dokumen blog terbaru -> pakai langsung
-     setBlogs(prev => prev.map(b => (b.id === id ? updated : b)))
+
+    const prevBlog = blogs.find(b => b.id === id)
+    if (!prevBlog) return
+
+
+    const payload = { 
+      upvotes: Number(currentUpvotes) + 1,
+      user: typeof prevBlog.user === 'object' ? prevBlog.user.id : prevBlog.user,
+    } // pastikan number
+    const saved = await blogServices.updateUpvotes(id, payload) // { upvotes: n }
+    // server mengembalikan dokumen blog terbaru -> pakai langsung
+
+    const enriched = {
+      ...prevBlog,
+      ...saved,
+      user: prevBlog.user,
+
+    }
+     setBlogs(prev => prev.map(b => (b.id === id ? enriched : b)))
     } catch (err) {
      console.error(err)
      setErrorMessage('failed to upvote')
