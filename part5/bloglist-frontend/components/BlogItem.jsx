@@ -9,7 +9,7 @@ const BlogItem = ({ blogs, onUpVote, onDelete}) => {
         <Blog
           key={b.id}
           blog={b}
-          onLike={onUpVote}   
+          onLike={(id, likesValue) => onUpVote(id, likesValue)}   
           onDelete={onDelete}
         />
       ))}

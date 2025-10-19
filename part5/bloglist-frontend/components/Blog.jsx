@@ -27,7 +27,6 @@ export default function Blog({ blog, onLike, onDelete }) {
           {blog.url && <div>{blog.url}</div>}
           <div>
             likes {likesValue}{' '}
-            {/* 5.7: like belum wajib bekerja; kalau Bos mau aktifkan, handler sudah disiapkan */}
             {onLike && (
               <button onClick={() => onLike(blog.id, likesValue)}>like</button>
             )}

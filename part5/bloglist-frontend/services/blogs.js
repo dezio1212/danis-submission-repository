@@ -6,6 +6,8 @@ let token = null
 const setToken = (newToken) => {
     token = `Bearer ${newToken}`
 }
+const auth = () => 
+    token ? { headers: {Authorization: token } } : {}
 
 const getAll = () => {
     const request = axios.get(baseUrl)
@@ -17,10 +19,10 @@ const create = async (newBlog) => {
     const { data } = await axios.post(baseUrl, newBlog, config)
     return data
 }
-const updateUpvotes = (id, newCount) => {
-    const request = axios.patch(`${baseUrl}/${id}`, { upvotes: newCount })
-    return request.then(response => response.data)
-}
+
+const updateUpvotes = async (id, updated) => 
+(await axios.put(`${baseUrl}/${id}`, updated, auth())).data
+
 const remove = (id) => {
     const request = axios.delete(`${baseUrl}/${id}`)
     return request.then(response => response.data)

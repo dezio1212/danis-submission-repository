@@ -69,20 +69,19 @@ function App() {
     }
   }
 
-  const handleUpvote = (id, currentUpvotes) => {
-    blogServices
-      .updateUpvotes(id, currentUpvotes + 1)
-      .then((returned) => {
-        const newUpvotes = typeof returned === 'number' ? returned : returned.upvotes
-        setBlogs(prev => prev.map(b => (b.id === id ? { ...b, upvotes: newUpvotes } : b)))
-      })
-      .catch((err) => {
-        console.error(err)
-        setErrorMessage('failed to upvote')
-        setTimeout(() => setErrorMessage(null), 4000)
-      })
+  const handleUpvote = async (id, currentUpvotes) => {
+  try {
+     const payload = { upvotes: Number(currentUpvotes) + 1 } // pastikan number
+     const updated = await blogServices.updateUpvotes(id, payload) // { upvotes: n }
+     // server mengembalikan dokumen blog terbaru -> pakai langsung
+     setBlogs(prev => prev.map(b => (b.id === id ? updated : b)))
+    } catch (err) {
+     console.error(err)
+     setErrorMessage('failed to upvote')
+     setTimeout(() => setErrorMessage(null), 4000)
+    }
   }
-
+  
   const handleRemove = (id) => {
     const targetBlog = blogs.find(b => b.id === id)
     const ok = window.confirm(`Are u sure to delete "${targetBlog?.title}" on these blogs`)
