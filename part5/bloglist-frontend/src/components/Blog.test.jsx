@@ -1,8 +1,9 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Blog from './Blog'
+import { expect } from 'vitest'
 
-describe('<Blog /> — exercise 5.14', () => {
+describe('<Blog /> — exercise 5.15', () => {
   test('shows title & author only by default; url/likes are hidden', () => {
     const blog = {
       id: 'b1',
@@ -55,4 +56,32 @@ describe('<Blog /> — exercise 5.14', () => {
     expect(likesEl).toBeInTheDocument()
     expect(likesEl).toHaveTextContent('42')
   })
+
+  test('clicking the like button twice calls onLike twice', async () => {
+    const blog = {
+      id: 'abc123',
+      title: 'Testing React like a pro',
+      author: 'Kent C. Dodds',
+      url: 'https://example.dev/blog/testing-like-a-pro',
+      upvotes: 7,
+      user: { name: 'Bos Danis', username: 'danis' },
+    }
+
+    const onLike = vi.fn()
+
+    render(<Blog blog={blog} onLike={onLike} />)
+
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: /view/i }))
+    
+    const likeBtn = screen.getByRole('button', { name: /like/i })
+    await user.click(likeBtn)
+    await user.click(likeBtn)
+
+    expect(onLike).toHaveBeenCalledTimes(2)
+
+    expect(onLike.mock.calls[0][0]).toBe(blog.id)
+
+    expect(onLike.mock.calls[0][1]).toBe(blog.upvotes ?? 0)
+    })
 })
