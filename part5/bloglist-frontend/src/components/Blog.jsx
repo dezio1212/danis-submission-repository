@@ -1,7 +1,6 @@
-// src/components/Blog.jsx
 import { useState } from 'react'
 
-export default function Blog({ blog, onLike, onDelete, currentUser}) {
+export default function Blog({ blog, onLike, onDelete, currentUser }) {
   const [expanded, setExpanded] = useState(false)
   const toggle = () => setExpanded(v => !v)
 
@@ -27,8 +26,9 @@ export default function Blog({ blog, onLike, onDelete, currentUser}) {
 
   return (
     <div style={blogStyle} className="blog">
-      <div>
-        {blog.title} {blog.author}{' '}
+      <div className="blogHeader">
+        <span className="blog__title">{blog.title}</span>{' '}
+        <span className="blog__author">{blog.author}</span>{' '}
         <button onClick={toggle}>{expanded ? 'hide' : 'view'}</button>
       </div>
 
