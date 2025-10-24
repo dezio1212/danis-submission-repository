@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import Blog from './Blog'
-import { exact } from 'prop-types'
 
-describe('<Blog /> — exercise 5.13', () => {
+describe('<Blog /> — exercise 5.14', () => {
   test('shows title & author only by default; url/likes are hidden', () => {
     const blog = {
       id: 'b1',
@@ -26,5 +26,33 @@ describe('<Blog /> — exercise 5.13', () => {
 
     // Opsi tambahan (sesuai implementasi Bos): container detail memang belum dirender
     expect(document.querySelector('.blogDetails')).toBeNull()
+  })
+
+  test('shows url & likes after clicking the "view" button', async () => {
+    const blog = {
+      id: 'abc123',
+      title: 'Testing React like a pro',
+      author: 'Kent C. Dodds',
+      url: 'https://example.dev/blog/testing-like-a-pro',
+      upvotes: 42,
+      user: { name: 'Bos Danis', username: 'danis' },
+    }
+
+    render(<Blog blog={blog} />)
+
+    // Sebelum klik: url/likes tidak ada di DOM (details belum dirender)
+    expect(screen.queryByText(blog.url)).toBeNull()
+    expect(screen.queryByText(/likes/i)).toBeNull()
+
+    // Klik tombol "view" → details muncul
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: /view/i }))
+
+    // Setelah klik: url & likes tampil
+    expect(screen.getByText(blog.url)).toBeInTheDocument()
+
+    const likesEl = screen.getByText(/likes/i)
+    expect(likesEl).toBeInTheDocument()
+    expect(likesEl).toHaveTextContent('42')
   })
 })
