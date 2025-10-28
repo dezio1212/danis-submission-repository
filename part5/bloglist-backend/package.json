@@ -1,0 +1,28 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "cross-env NODE_ENV=test node --test",
+    "start": "node index.js",
+    "start:test": "cross-env NODE_ENV=test node index.js",
+    "dev": "node --watch index.js",
+    "build:ui": "rm -rf ../bloglist-backend/dist && cd ../bloglist-frontend && npm run build && cp -r dist ../bloglist-backend/",
+    "seed:blogs": "node scripts/seedBlogs.js"
+  },
+  "author": "DanisSH",
+  "license": "MIT",
+  "description": "",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.18.0"
+  },
+  "devDependencies": {
+    "cross-env": "^10.0.0",
+    "supertest": "^7.1.4"
+  }
+}
