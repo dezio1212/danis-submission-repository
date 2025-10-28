@@ -1,5 +1,3 @@
-/// 
-// BlogItem menampilkan judul, author, url, upvotes, dan tombol “Upvote”.
 import Blog from './Blog'
 
 const BlogItem = ({ blogs, onUpVote, onDelete, currentUser}) => {

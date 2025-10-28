@@ -1,4 +1,3 @@
-// src/components/Togglable.jsx
 import { useState, forwardRef, useImperativeHandle } from 'react'
 
 const Togglable = forwardRef(({ buttonLabel, children }, ref) => {
