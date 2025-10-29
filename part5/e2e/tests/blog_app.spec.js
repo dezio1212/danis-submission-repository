@@ -1,16 +1,20 @@
 const { test, expect, describe, beforeEach } = require('@playwright/test')
-const { loginWith, createBlog, showBlogDetails, likeBlog, removeBlog, blogItem } = require('./helper')
+const { loginWith, createBlog, showBlogDetails, likeBlog, removeBlog, blogItem, createUser, logout } = require('./helper')
 
 describe('Blog app', () => {
     beforeEach(async ({ page, request }) => {
         await request.post('/api/testing/reset')
 
-        await request.post('/api/users', {
-            data: {
-                name: 'Matti Luukkainen',
-                username: 'mluukkai',
-                password: 'salainen'
-            }
+        await createUser(request, {
+            name: 'Matti Luukkainen',
+            username: 'mluukkai',
+            password: 'salainen',
+        })
+
+        await createUser(request, {
+            name: 'Danis Satrianto',
+            username: 'danis',
+            password: 'secret',
         })
 
         await page.goto('/')
@@ -117,6 +121,29 @@ describe('Blog app', () => {
             await removeBlog(page, blog)
 
             await expect(blogItem(page, blog)).toHaveCount(0)
+        })
+    })
+
+    describe('permissions', () => {
+        test('only the creator sees the remove button', async ({ page }) => {
+            const blog = {
+                title: 'Owernership test blog',
+                author: 'Creator User',
+                url: 'https://example.com/owenership',
+            }
+
+            await loginWith(page, 'mluukkai', 'salainen')
+            await createBlog(page, blog)
+            await expect(blogItem(page, blog)).toBeVisible()
+
+            await logout(page)
+            await loginWith(page, 'danis', 'secret')
+
+            const item = await showBlogDetails(page, blog)
+
+
+            await expect(item.getByRole('button', { name: /remove/i})).toHaveCount(0)
+            await expect(item.getByRole('button', { name: /remove/i})).not.toBeVisible()
         })
     })
 })

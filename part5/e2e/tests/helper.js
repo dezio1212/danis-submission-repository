@@ -1,5 +1,9 @@
 import { expect } from "@playwright/test"
 
+const createUser = async (request, { name, username, password }) => {
+    await request.post('/api/users', { data: { name, username, password }})
+}
+
 const loginWith = async (page, username, password) => {
     const loginToggle = page.getByRole('button', { name: /login/i })
     if (await loginToggle.isVisible()) await loginToggle.click()
@@ -9,9 +13,19 @@ const loginWith = async (page, username, password) => {
     await page.getByRole('button', { name: /login/i }).click()
 }
 
+const logout = async (page) => {
+    const btn = page.getByRole('button', { name: /logout/i })
+    if (await btn.count()) {
+        await btn.click()
+    } else {
+        await page.evaluate(() => localStorage.clear())
+        await page.reload()
+    }
+}
+
 const createBlog = async (page, { title, author, url }) => {
     const toggle = page.getByRole('button', { name: /create new blog/i })
-    if (await toggle.isVisible()) await toggle.click()
+    await toggle.click()
 
     await page.getByLabel(/title/i).fill(title)
     await page.getByLabel(/author/i).fill(author)
@@ -67,5 +81,7 @@ export {
     blogItem, 
     showBlogDetails, 
     likeBlog,
-    removeBlog
+    removeBlog,
+    createUser, 
+    logout,
 }
