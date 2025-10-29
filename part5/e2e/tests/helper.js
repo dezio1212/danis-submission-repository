@@ -19,4 +19,34 @@ const createBlog = async (page, { title, author, url }) => {
     await page.getByText(new RegExp(`${title}.*${author}`, 'i')).waitFor()
 }
 
-export { loginWith, createBlog }
+const escapeRe = (s = '') => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const blogItem = (page, { title, author }) => {
+  const re = new RegExp(`${escapeRe(title)}[\\s\\S]*${escapeRe(author)}`, 'i');
+  return page
+    .locator('[data-test=blog-item], li, article, div')
+    .filter({ hasText: re })
+    .first();
+};
+
+const showBlogDetails = async (page, blog) => {
+    const item = blogItem(page, blog)
+    const viewBtn = item.getByRole('button', { 
+        name: /view|details|toggle|show/i, 
+    })
+    if (await viewBtn.count()) {
+        await viewBtn.click()
+    }
+        return item
+}
+
+const likeBlog = async (page, blog, times = 1) => {
+    const item = await showBlogDetails(page, blog)
+    const likeBtn = item.getByRole('button', { name: /like/i })
+    for (let i = 0; i < times; i++) {
+        await likeBtn.click()
+    }
+    return item
+}
+
+export { loginWith, createBlog, blogItem, showBlogDetails, likeBlog }

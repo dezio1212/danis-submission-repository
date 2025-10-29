@@ -1,5 +1,5 @@
 const { test, expect, describe, beforeEach } = require('@playwright/test')
-const { loginWith, createBlog } = require('./helper')
+const { loginWith, createBlog, showBlogDetails, likeBlog } = require('./helper')
 
 describe('Blog app', () => {
     beforeEach(async ({ page, request }) => {
@@ -67,6 +67,40 @@ describe('Blog app', () => {
                 .first();
 
             await expect(item).toBeVisible();
+        })
+
+        test('a blog can be liked', async ({ page }) => {
+            const blog = {
+                title: 'React Patterns',
+                author: 'Michael Chan',
+                url: 'https://reactpatterns.com/',
+            }
+
+            await createBlog(page, blog)
+
+            const item = await showBlogDetails(page, blog)
+            const likesText = item.getByText(/likes/i)
+
+            await likeBlog(page, blog, 1)
+
+            await expect(likesText).toHaveText(/likes/i)
+        })
+
+        test('a blog can be liked multiple times', async ({ page }) => {
+            const blog = {
+                title: 'The Road to Learn React',
+                author: 'Robin Wieruch',
+                url: 'https://www.roadtoreact.com/',
+            };
+
+            await createBlog(page, blog)
+
+            const item = await showBlogDetails(page, blog)
+            const likesText = item.getByText(/likes/i)
+
+            await likeBlog(page, blog, 2)
+
+            await expect(likesText).toHaveText(/likes/i)
         })
     })
 })
