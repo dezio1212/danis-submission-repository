@@ -25,7 +25,7 @@ export default function Blog({ blog, onLike, onDelete, currentUser }) {
     (userId && meId && userId === meId)
 
   return (
-    <div style={blogStyle} className="blog">
+    <div style={blogStyle} className="blog" data-test="blog-item">
       <div className="blogHeader">
         <span className="blog__title">{blog.title}</span>{' '}
         <span className="blog__author">{blog.author}</span>{' '}

@@ -122,6 +122,42 @@ describe('Blog app', () => {
 
             await expect(blogItem(page, blog)).toHaveCount(0)
         })
+
+        test('blog are ordered by likes (descending)', async ({ page }) => {
+            const a = { title: 'Least liked', author: 'A', url: 'https://a.example.com'}
+            const b = { title: 'Medium liked', author: 'B', url: 'https://b.example.com'}
+            const c = { title: 'Most liked', author: 'C', url: 'https://c.example.com'}
+
+            await createBlog(page, a)
+            await createBlog(page, b)
+            await createBlog(page, c)
+
+            await likeBlog(page, a, 1)
+            await likeBlog(page, b, 1)
+            await likeBlog(page, c, 1)
+
+            let items = page.locator('[data-test=blog-item]')
+            if ((await items.count()) === 0) {
+                items = page.locator('li, article, div')
+                    .filter({ hasText: /likes/i })
+            }
+
+            const n = await items.count()
+            const likes = []
+            const titles = []
+
+            for (let i = 0; i < n; i++) {
+                const el = items.nth(i)
+                const text = (await el.textContent()) ?? ''
+                const likeNum = Number((text.match(/likes?\s*:?\s*(\d+)/i) || [,'0'])[1])
+                likes.push(likeNum)
+              
+                titles.push((text.match(/^\s*(.+?)\s*(?:by|–|-)/i) || [,''])[1])
+
+                const sorted = [...likes].sort((x, y) => y - x)
+                expect(likes, `Order wrong.\nDOM titles: ${titles.join(' | ')}\nlikes: ${likes}`).toEqual(sorted)
+            }
+        })
     })
 
     describe('permissions', () => {
