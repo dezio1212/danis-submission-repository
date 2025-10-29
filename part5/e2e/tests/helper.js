@@ -1,3 +1,5 @@
+import { expect } from "@playwright/test"
+
 const loginWith = async (page, username, password) => {
     const loginToggle = page.getByRole('button', { name: /login/i })
     if (await loginToggle.isVisible()) await loginToggle.click()
@@ -49,4 +51,21 @@ const likeBlog = async (page, blog, times = 1) => {
     return item
 }
 
-export { loginWith, createBlog, blogItem, showBlogDetails, likeBlog }
+const removeBlog = async (page, blog) => {
+    const item = await showBlogDetails(page, blog)
+    const removeBtn = item.getByRole('button', { name: /remove/i })
+
+    page.once('dialog', d => d.accept())
+    await removeBtn.click()
+
+    await expect(item).toHaveCount(0)
+}
+
+export { 
+    loginWith, 
+    createBlog, 
+    blogItem, 
+    showBlogDetails, 
+    likeBlog,
+    removeBlog
+}

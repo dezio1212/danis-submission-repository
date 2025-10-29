@@ -1,5 +1,5 @@
 const { test, expect, describe, beforeEach } = require('@playwright/test')
-const { loginWith, createBlog, showBlogDetails, likeBlog } = require('./helper')
+const { loginWith, createBlog, showBlogDetails, likeBlog, removeBlog, blogItem } = require('./helper')
 
 describe('Blog app', () => {
     beforeEach(async ({ page, request }) => {
@@ -101,6 +101,22 @@ describe('Blog app', () => {
             await likeBlog(page, blog, 2)
 
             await expect(likesText).toHaveText(/likes/i)
+        })
+
+        test('creator can delete a blog', async ({ page }) => {
+            const blog = {
+                title: 'The Road to Learn React',
+                author: 'Robin Wieruch',
+                url: 'https://www.roadtoreact.com/',
+            };
+
+            await createBlog(page, blog)
+
+            await expect(blogItem(page, blog)).toBeVisible()
+
+            await removeBlog(page, blog)
+
+            await expect(blogItem(page, blog)).toHaveCount(0)
         })
     })
 })
