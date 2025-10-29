@@ -11,6 +11,7 @@ export default function Notification({ notice }) {
   return (
     <div
       role="alert"
+      className="error"
       aria-live="polite"
       style={{
         margin: '12px 0',
