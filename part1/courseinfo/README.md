@@ -60,7 +60,7 @@ fullstack-open/
       │  └─ main.jsx
       ├─ index.html
       ├─ package.json
-      └─ README.md   ← this file
+      └─ README.md 
 ```
 
 Notes:
