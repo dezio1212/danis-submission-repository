@@ -4,6 +4,17 @@ function Button({ onClick, children }) {
   return <button onClick={onClick}>{children}</button>
 }
 
+function StatisticLine({ text, value, suffix = '' }) {
+  return (
+    <tr>
+      <td>{text}</td>
+      <td>
+        {value} {suffix}
+      </td>
+    </tr>
+  )
+}
+
 function Statistics({ good, neutral, bad }) {
   const all = good + neutral + bad
   if (all === 0) {
@@ -15,38 +26,20 @@ function Statistics({ good, neutral, bad }) {
     )
   }
 
-  const average = (good - bad) / all       // +1, 0, -1
-  const positive = (good / all) * 100      // %
+  const average = (good - bad) / all      // +1, 0, -1
+  const positive = (good / all) * 100     // %
 
   return (
     <div>
       <h2>statistics</h2>
       <table>
         <tbody>
-          <tr>
-            <td>good</td>
-            <td>{good}</td>
-          </tr>
-          <tr>
-            <td>neutral</td>
-            <td>{neutral}</td>
-          </tr>
-          <tr>
-            <td>bad</td>
-            <td>{bad}</td>
-          </tr>
-          <tr>
-            <td>all</td>
-            <td>{all}</td>
-          </tr>
-          <tr>
-            <td>average</td>
-            <td>{average.toFixed(1)}</td>
-          </tr>
-          <tr>
-            <td>positive</td>
-            <td>{positive.toFixed(1)} %</td>
-          </tr>
+          <StatisticLine text="good" value={good} />
+          <StatisticLine text="neutral" value={neutral} />
+          <StatisticLine text="bad" value={bad} />
+          <StatisticLine text="all" value={all} />
+          <StatisticLine text="average" value={average.toFixed(1)} />
+          <StatisticLine text="positive" value={positive.toFixed(1)} suffix="%" />
         </tbody>
       </table>
     </div>
@@ -61,7 +54,6 @@ function App() {
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: 1.5 }}>
       <h1>give feedback</h1>
-
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         <Button onClick={() => setGood(good + 1)}>good</Button>
         <Button onClick={() => setNeutral(neutral + 1)}>neutral</Button>
