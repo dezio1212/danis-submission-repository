@@ -13,9 +13,9 @@ function App() {
   ]
 
   const [selected, setSelected] = useState(0)
+  const [votes, setVotes] = useState(() => new Array(anecdotes.length).fill(0))
 
   const nextAnecdote = () => {
-
     let idx = Math.floor(Math.random() * anecdotes.length)
     if (anecdotes.length > 1 && idx === selected) {
       idx = (idx + 1) % anecdotes.length
@@ -23,14 +23,25 @@ function App() {
     setSelected(idx)
   }
 
+  const voteCurrent = () => {
+    setVotes(prev => {
+      const copy = [...prev]
+      copy[selected] += 1
+      return copy
+    })
+  }
+
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: 1.5, padding: 16 }}>
       <h1>Anecdote of the day</h1>
-      <p style={{ maxWidth: 640 }}>{anecdotes[selected]}</p>
 
-      <button onClick={nextAnecdote} style={{ marginTop: 12 }}>
-        next anecdote
-      </button>
+      <p style={{ maxWidth: 640 }}>{anecdotes[selected]}</p>
+      <p>has {votes[selected]} votes</p>
+
+      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+        <button onClick={voteCurrent}>vote</button>
+        <button onClick={nextAnecdote}>next anecdote</button>
+      </div>
     </div>
   )
 }
