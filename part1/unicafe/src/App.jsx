@@ -15,19 +15,40 @@ function Statistics({ good, neutral, bad }) {
     )
   }
 
-  const average = (good - bad) / all         // +1, 0, -1
-  const positive = (good / all) * 100        // %
+  const average = (good - bad) / all       // +1, 0, -1
+  const positive = (good / all) * 100      // %
 
   return (
     <div>
       <h2>statistics</h2>
-      <p>good {good}</p>
-      <p>neutral {neutral}</p>
-      <p>bad {bad}</p>
-
-      <p>all {all}</p>
-      <p>average {average.toFixed(1)}</p>
-      <p>positive {positive.toFixed(1)} %</p>
+      <table>
+        <tbody>
+          <tr>
+            <td>good</td>
+            <td>{good}</td>
+          </tr>
+          <tr>
+            <td>neutral</td>
+            <td>{neutral}</td>
+          </tr>
+          <tr>
+            <td>bad</td>
+            <td>{bad}</td>
+          </tr>
+          <tr>
+            <td>all</td>
+            <td>{all}</td>
+          </tr>
+          <tr>
+            <td>average</td>
+            <td>{average.toFixed(1)}</td>
+          </tr>
+          <tr>
+            <td>positive</td>
+            <td>{positive.toFixed(1)} %</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   )
 }
