@@ -31,17 +31,30 @@ function App() {
     })
   }
 
+  // Hitung pemenang
+  const topVotes = Math.max(...votes)
+  const topIndex = votes.indexOf(topVotes)       // jika seri, ambil yang pertama
+  const hasAnyVote = topVotes > 0
+
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', lineHeight: 1.5, padding: 16 }}>
       <h1>Anecdote of the day</h1>
-
       <p style={{ maxWidth: 640 }}>{anecdotes[selected]}</p>
       <p>has {votes[selected]} votes</p>
-
       <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
         <button onClick={voteCurrent}>vote</button>
         <button onClick={nextAnecdote}>next anecdote</button>
       </div>
+
+      <h1 style={{ marginTop: 32 }}>Anecdote with most votes</h1>
+      {hasAnyVote ? (
+        <>
+          <p style={{ maxWidth: 640 }}>{anecdotes[topIndex]}</p>
+          <p>has {votes[topIndex]} votes</p>
+        </>
+      ) : (
+        <p>No votes yet</p>
+      )}
     </div>
   )
 }
