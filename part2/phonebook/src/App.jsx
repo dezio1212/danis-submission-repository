@@ -39,9 +39,19 @@ function App() {
       retur
     }
 
-    setPersons(persons.concat({ name, number }))
-    setNewName('')
-    setNewNumber('')
+    const personObject = { name, number };
+    axios
+      .post('http://localhost:3001/persons', personObject)
+      .then((res) => {
+
+        setPersons(persons.concat(res.data));
+        setNewName('');
+        setNewNumber('');
+      })
+      .catch((err) => {
+        console.error('POST /persons failed:', err);
+        window.alert('Failed to add person. Please try again.');
+      })
   }
 
   const normalizedFilter = filter.trim().toLowerCase();
