@@ -1,157 +1,195 @@
 
----
+```markdown
+# Course Info (Full Stack Open — Part 2, Exercises 2.1–2.5)
 
-# Courseinfo (Full Stack Open — Part 1, Exercises 1.1–1.5)
+A small React application that displays one or more courses, their parts, and the total number of exercises. This repository implements **Part 2 — Course Information** exercises **2.1 → 2.5**.
 
-A minimal React app built with Vite for **Full Stack Open** Part 1.
-This repository contains the evolving “Course Information” app across exercises **1.1 → 1.5** and the **final state after 1.5** (as required by the course instructions).
-
-## What you’ll see
-
-* **Exercise 1.1:** Split UI into `Header`, `Content`, `Total` (props from `App`).
-* **Exercise 1.2:** `Content` renders **three `Part` components**.
-* **Exercise 1.3:** Convert each part into an **object** `{ name, exercises }`.
-* **Exercise 1.4:** Put the three part objects into a **single array `parts`** and pass as one prop.
-* **Exercise 1.5:** Create **one `course` object** with `name` and `parts` array; update components accordingly.
-
-> The app output remains the same across steps; only the data model and component boundaries evolve.
+> **Academic Integrity & Attribution**  
+> This project is a student implementation inspired by the *Full Stack Open* course from the University of Helsinki. All code is original unless explicitly attributed in comments. Course materials © University of Helsinki / Full Stack Open.
 
 ---
 
-## Learning objectives
-
-* Practice **component composition** and **prop passing**.
-* Understand **JSX** and what can/cannot be rendered (e.g., **no raw objects** as children).
-* Model data with **objects** and **arrays**, preparing for list rendering in later parts.
-* Keep the **browser console** open and iterate in **small steps** to avoid breaking changes.
-
----
-
-## Tech stack
-
-* **React 18** (Vite template)
-* **Vite** dev server & build
-* **Node.js** ≥ 18, **npm** ≥ 9
+## Table of Contents
+- [Learning Objectives](#learning-objectives)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Available Scripts](#available-scripts)
+- [Implementation Notes](#implementation-notes)
+- [Exercises Coverage](#exercises-coverage)
+- [Quality Practices](#quality-practices)
+- [Academic Integrity Policy](#academic-integrity-policy)
+- [License](#license)
 
 ---
 
-## Getting started
+## Learning Objectives
+- Render collections with `Array.map` and proper `key` props.
+- Compose UI with small, focused components (`Header`, `Content`, `Part`, `Total`, `Course`).
+- Refactor from single-course to multi-course data structures.
+- Compute derived data (`total` exercises) first imperatively, then generically via `Array.reduce`.
+- Organize code into modules and keep `App` thin.
+
+---
+
+## Tech Stack
+- **Runtime:** Node.js ≥ 18
+- **Frontend:** React + Vite
+- **Language:** JavaScript (ES2020+)
+- **Tooling:** npm scripts
+
+> No external state libraries, routers, or CSS frameworks are required for these exercises.
+
+---
+
+## Project Structure
+```
+
+project-root/
+src/
+components/
+Course.jsx        # Course + Header + Content + Part + Total
+App.jsx             # Renders the list of courses using <Course />
+main.jsx            # ReactDOM bootstrap
+index.css           # Minimal styles (optional)
+index.html
+package.json
+README.md
+
+````
+
+---
+
+## Getting Started
+```bash
+# 1) Install dependencies
+npm install
+
+# 2) Start the dev server
+npm run dev
+
+# 3) Open the app (Vite will show the local URL in the terminal)
+````
+
+**Node version:** use Node 18 or newer.
+**Environment variables:** none required.
+
+---
+
+## Available Scripts
 
 ```bash
-# from the repository root
-cd part1/courseinfo
-npm install
-npm run dev
-# open the printed localhost URL (usually http://localhost:5173)
+npm run dev        # Start Vite dev server
+npm run build      # Production build
+npm run preview    # Preview build output
 ```
-
-> If port 5173 is taken, Vite will automatically use the next available port.
 
 ---
 
-## Repository structure
+## Implementation Notes
 
+### Components
+
+* **Course** (default export): orchestrates rendering a single course.
+* **Header**: displays the course name.
+* **Content**: renders parts using `Array.map`.
+* **Part**: prints a single part (`name` + `exercises`).
+* **Total**: computes total exercises **generically** with `Array.reduce`.
+
+### Data Shape
+
+```js
+{
+  id: number,
+  name: string,
+  parts: [
+    { id: number, name: string, exercises: number },
+    ...
+  ]
+}
 ```
-fullstack-open/
-└─ part1/
-   └─ courseinfo/
-      ├─ src/
-      │  ├─ App.jsx
-      │  └─ main.jsx
-      ├─ index.html
-      ├─ package.json
-      └─ README.md 
-```
 
-Notes:
+### Keys
 
-* Scaffold files not used (e.g., default CSS and `assets`) were removed for clarity.
-* Commit history (if available) shows incremental steps from **1.1 → 1.5**.
-* The **assessed submission** is the **state after 1.5**.
+* Lists always use **stable, unique** keys (e.g., `part.id`, `course.id`).
+* Array indices are **not** used as keys to avoid reconciliation pitfalls.
 
 ---
 
-## Implementation summary (by exercise)
+## Exercises Coverage
 
-### 1.1 — Split into `Header`, `Content`, `Total`
+### ✅ 2.1 — Render course parts
 
-* `App` holds the course title and three pairs `(part, exercises)`.
-* Pass values to `Header`, `Content`, and `Total` via props.
+* Introduced `Course` with `Header` and `Content`.
+* `App` passes a single `course` to `Course`.
+* Rendered parts with `map` and proper `key`.
 
-### 1.2 — `Part` components
+### ✅ 2.2 — Show total (simple sum)
 
-* `Content` renders **three** `<Part />`, one per part, forwarding `name` and `exercises`.
+* Added `Total` component with a simple three-item sum (imperative).
+* Maintained separation of concerns: `Content` lists parts, `Total` sums.
 
-### 1.3 — Use objects for parts
+### ✅ 2.3 — Generalize total with `reduce`
 
-* Each part is now `{ name, exercises }`.
-* `Part` receives a single prop `part` and renders `part.name` and `part.exercises`.
-* Avoid rendering raw objects in JSX (use fields).
-
-### 1.4 — Use an array of parts
-
-* Replace three separate part variables with an array `parts = [ {...}, {...}, {...} ]`.
-* Pass `parts` to `Content` and `Total` as **one prop**.
-* For this step, indexing is acceptable (looping will come later).
-
-### 1.5 — Single `course` object
-
-* Consolidate into:
+* Replaced the simple sum with:
 
   ```js
-  const course = {
-    name: 'Half Stack application development',
-    parts: [
-      { name: 'Fundamentals of React', exercises: 10 },
-      { name: 'Using props to pass data', exercises: 7 },
-      { name: 'State of a component', exercises: 14 }
-    ]
-  }
+  const total = parts.reduce((sum, p) => sum + Number(p.exercises || 0), 0)
   ```
-* `Header` uses `course.name`; `Content` and `Total` receive `course.parts`.
+* Works for any number of parts, including empty arrays.
+
+### ✅ 2.4 — Multiple courses
+
+* `App` now holds `const courses = [...]`.
+* Rendered multiple `<Course />` components with `courses.map(...)`.
+
+### ✅ 2.5 — Modularization
+
+* Extracted everything related to the course UI into `src/components/Course.jsx`.
+* `App.jsx` remains a thin composition layer.
 
 ---
 
-## How to verify (manual checks)
+## Quality Practices
 
-1. App renders:
+### Debugging
 
-   * Title `<h1>` with the course name.
-   * Exactly **three** lines for parts with their exercise counts.
-   * A **total** line with the sum of all exercises.
-2. No console errors:
+* Use `console.log` near data boundaries (e.g., before destructuring props).
+* Prefer comma-separated logs over string concatenation for readability:
 
-   * Especially **no** “Objects are not valid as a React child” (all objects are dereferenced).
-3. Code organization:
+  ```js
+  console.log('Course parts:', parts)
+  ```
 
-   * `Header`, `Content`, `Part`, `Total` are **small** and **single-responsibility**.
-   * Data flows **top-down** via props; no state is introduced in 1.1–1.5.
+### Commit Messages
+
+* Conventional style for clarity and traceability:
+
+  * `feat(course): implement Part 2 — Exercise 2.1`
+  * `refactor(course): compute total with Array.reduce for 2.3`
+  * `feat(course): support multiple courses (2.4)`
+  * `refactor(course): extract Course into module (2.5)`
+
+### Accessibility (Basic)
+
+* Semantic headings (`h1` for app title, `h2` for course names).
+* Plain text lists for parts ensure screen-reader friendliness.
 
 ---
 
-## Common pitfalls & debugging tips
+## Academic Integrity Policy
 
-* **Do not render objects** directly: use `part.name`, not `part`.
-* If the app “breaks,” revert to the last working commit and proceed in **small steps**.
-* Keep the **browser console open**: it will point to missing props or typos.
-* Use `console.log(props)` temporarily to confirm data shapes during refactors.
+* All code in this repository is **original student work** written specifically for this assignment.
+* Any adaptation from external sources (documentation, forums, etc.) must be **clearly attributed in code comments** (e.g., `// Adapted from <source>`).
+* No unauthorized collaboration, ghostwriting, or plagiarism.
+* This repository may be inspected for similarity and provenance.
 
----
-
-## Academic integrity & attribution
-
-* This code is an **original implementation** by the student to satisfy **Full Stack Open** Part 1 exercises 1.1–1.5.
-* Exercise descriptions are **paraphrased** to explain intent; no verbatim copying of course text or third-party code.
-* If any snippet were adapted from external sources (e.g., docs, Stack Overflow), it would be **explicitly attributed in comments** and comply with its license. In this project, **no third-party snippets** beyond the Vite scaffold were used.
-* Libraries used are standard course tooling (React, Vite) according to their respective licenses.
+> If in doubt, attribute the source. Short, self-contained utility code (e.g., basic array iteration) is considered common knowledge and typically does not require citation.
 
 ---
 
 ## License
 
-This repository is for educational purposes as part of **Full Stack Open** coursework.
-Feel free to review and run locally. Redistribution of the exact coursework text is intentionally avoided.
+This student work is provided for educational purposes. Course materials referenced are © University of Helsinki / Full Stack Open. Check their licensing for redistribution terms.
 
----
-
-If you need a variant with `.map()`/`.reduce()` (forward-looking to Part 2) or a commit-per-exercise branch layout, I can add it.
+```
