@@ -1,4 +1,3 @@
-Siap, Bos Danis. Berikut **global `README.md`** (tidak spesifik ke part tertentu). Isinya fokus pada cara instalasi & penggunaan React project secara umum—siap ditempatkan di root master repo. Bahasa: **English**.
 
 ---
 
