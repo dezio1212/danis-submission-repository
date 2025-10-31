@@ -19,6 +19,8 @@ export default function App() {
 
   const handleChange = (e) => setQuery(e.target.value)
 
+  const handleShow = (name) => setQuery(name)
+
   const q = query.trim().toLowerCase()
   const matches = !q
     ? []
@@ -32,7 +34,7 @@ export default function App() {
   } else if (matches.length > 10) {
     content = <div>Too many matches, specify another filter</div>
   } else if (matches.length > 1) {
-    content = <CountryList countries={matches} />
+    content = <CountryList countries={matches} onShow={handleShow} />
   } else if (matches.length === 1) {
     content = <CountryDetail country={matches[0]} />
   } else {
