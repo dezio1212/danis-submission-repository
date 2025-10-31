@@ -1,157 +1,240 @@
 
 ---
 
-# Courseinfo (Full Stack Open — Part 1, Exercises 1.1–1.5)
+# Phonebook — Full Stack Open (Part 2, Exercises 2.6–2.15)
 
-A minimal React app built with Vite for **Full Stack Open** Part 1.
-This repository contains the evolving “Course Information” app across exercises **1.1 → 1.5** and the **final state after 1.5** (as required by the course instructions).
+A React + JSON Server phonebook app that demonstrates **controlled forms**, **client-side filtering**, and **CRUD over HTTP** with **axios**, incrementally built through **Exercises 2.6 → 2.15**.
 
-## What you’ll see
-
-* **Exercise 1.1:** Split UI into `Header`, `Content`, `Total` (props from `App`).
-* **Exercise 1.2:** `Content` renders **three `Part` components**.
-* **Exercise 1.3:** Convert each part into an **object** `{ name, exercises }`.
-* **Exercise 1.4:** Put the three part objects into a **single array `parts`** and pass as one prop.
-* **Exercise 1.5:** Create **one `course` object** with `name` and `parts` array; update components accordingly.
-
-> The app output remains the same across steps; only the data model and component boundaries evolve.
+> **Attribution & Academic Integrity**
+> This project was developed by me as a learning exercise inspired by the *Full Stack Open* course (Part 2: Forms & Communicating with Server). I wrote the code myself, adapting patterns from the course readings and documentation. Where relevant, I’ve included comments and this attribution note. Please do not copy this work verbatim for academic submissions.
 
 ---
 
-## Learning objectives
+## Table of Contents
 
-* Practice **component composition** and **prop passing**.
-* Understand **JSX** and what can/cannot be rendered (e.g., **no raw objects** as children).
-* Model data with **objects** and **arrays**, preparing for list rendering in later parts.
-* Keep the **browser console** open and iterate in **small steps** to avoid breaking changes.
+* [Features](#features)
+* [Architecture](#architecture)
+* [Project Structure](#project-structure)
+* [Getting Started](#getting-started)
+* [Available Scripts](#available-scripts)
+* [Data Model & API](#data-model--api)
+* [Implementation Details](#implementation-details)
+* [Exercise Coverage (2.6–2.15)](#exercise-coverage-26–215)
+* [Quality & Conventions](#quality--conventions)
+* [Troubleshooting](#troubleshooting)
+* [License](#license)
 
 ---
 
-## Tech stack
+## Features
 
-* **React 18** (Vite template)
-* **Vite** dev server & build
-* **Node.js** ≥ 18, **npm** ≥ 9
+* Add people to the phonebook with **name** and **number** (controlled form).
+* **Prevent duplicates** (case-insensitive) with clear alert UI.
+* **Filter** visible entries by name (case-insensitive).
+* Persist data to a **JSON Server**:
+
+  * Load initial data via `GET /persons`
+  * Create with `POST /persons`
+  * Update number with `PUT /persons/:id` (after confirmation)
+  * Delete with `DELETE /persons/:id` (after confirmation)
+* Clean separation between **UI** and **HTTP logic** via a `services/persons.js` module.
 
 ---
 
-## Getting started
+## Architecture
+
+* **Frontend:** React (Vite) single-page app
+* **Backend (Dev):** `json-server` serving `db.json` on port **3001**
+* **HTTP Client:** `axios` (wrapped in `src/services/persons.js`)
+* **State management:** React `useState` & derived values; `useEffect` for initial data fetch
+
+---
+
+## Project Structure
+
+```
+project-root/
+  db.json
+  package.json
+  index.html
+  src/
+    App.jsx
+    index.css
+    main.jsx
+    components/
+      Filter.jsx
+      PersonForm.jsx
+      Persons.jsx
+    services/
+      persons.js
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+* Node.js (LTS recommended)
+* npm
+
+### Install Dependencies
 
 ```bash
-# from the repository root
-cd part1/courseinfo
 npm install
+```
+
+### Seed Data
+
+Create `db.json` in the project root:
+
+```json
+{
+  "persons": [
+    { "name": "Arto Hellas",      "number": "040-123456",     "id": "1" },
+    { "name": "Ada Lovelace",     "number": "39-44-5323523",  "id": "2" },
+    { "name": "Dan Abramov",      "number": "12-43-234345",   "id": "3" },
+    { "name": "Mary Poppendieck", "number": "39-23-6423122",  "id": "4" }
+  ]
+}
+```
+
+### Start the Servers (Two Terminals)
+
+**Terminal A (JSON Server):**
+
+```bash
+npm run server
+# serves http://localhost:3001
+```
+
+**Terminal B (Vite Dev Server):**
+
+```bash
 npm run dev
-# open the printed localhost URL (usually http://localhost:5173)
+# serves http://localhost:5173 (default)
 ```
-
-> If port 5173 is taken, Vite will automatically use the next available port.
 
 ---
 
-## Repository structure
+## Available Scripts
 
-```
-fullstack-open/
-└─ part1/
-   └─ courseinfo/
-      ├─ src/
-      │  ├─ App.jsx
-      │  └─ main.jsx
-      ├─ index.html
-      ├─ package.json
-      └─ README.md 
-```
-
-Notes:
-
-* Scaffold files not used (e.g., default CSS and `assets`) were removed for clarity.
-* Commit history (if available) shows incremental steps from **1.1 → 1.5**.
-* The **assessed submission** is the **state after 1.5**.
-
----
-
-## Implementation summary (by exercise)
-
-### 1.1 — Split into `Header`, `Content`, `Total`
-
-* `App` holds the course title and three pairs `(part, exercises)`.
-* Pass values to `Header`, `Content`, and `Total` via props.
-
-### 1.2 — `Part` components
-
-* `Content` renders **three** `<Part />`, one per part, forwarding `name` and `exercises`.
-
-### 1.3 — Use objects for parts
-
-* Each part is now `{ name, exercises }`.
-* `Part` receives a single prop `part` and renders `part.name` and `part.exercises`.
-* Avoid rendering raw objects in JSX (use fields).
-
-### 1.4 — Use an array of parts
-
-* Replace three separate part variables with an array `parts = [ {...}, {...}, {...} ]`.
-* Pass `parts` to `Content` and `Total` as **one prop**.
-* For this step, indexing is acceptable (looping will come later).
-
-### 1.5 — Single `course` object
-
-* Consolidate into:
-
-  ```js
-  const course = {
-    name: 'Half Stack application development',
-    parts: [
-      { name: 'Fundamentals of React', exercises: 10 },
-      { name: 'Using props to pass data', exercises: 7 },
-      { name: 'State of a component', exercises: 14 }
-    ]
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "server": "json-server -p 3001 db.json",
+    "build": "vite build",
+    "preview": "vite preview"
   }
-  ```
-* `Header` uses `course.name`; `Content` and `Total` receive `course.parts`.
+}
+```
 
 ---
 
-## How to verify (manual checks)
+## Data Model & API
 
-1. App renders:
+### Person
 
-   * Title `<h1>` with the course name.
-   * Exactly **three** lines for parts with their exercise counts.
-   * A **total** line with the sum of all exercises.
-2. No console errors:
+```ts
+type Person = {
+  id: string;        // generated by json-server on POST
+  name: string;      // unique (enforced in client)
+  number: string;    // phone number as free text
+}
+```
 
-   * Especially **no** “Objects are not valid as a React child” (all objects are dereferenced).
-3. Code organization:
+### Endpoints (json-server)
 
-   * `Header`, `Content`, `Part`, `Total` are **small** and **single-responsibility**.
-   * Data flows **top-down** via props; no state is introduced in 1.1–1.5.
-
----
-
-## Common pitfalls & debugging tips
-
-* **Do not render objects** directly: use `part.name`, not `part`.
-* If the app “breaks,” revert to the last working commit and proceed in **small steps**.
-* Keep the **browser console open**: it will point to missing props or typos.
-* Use `console.log(props)` temporarily to confirm data shapes during refactors.
+* `GET    /persons` — list all
+* `POST   /persons` — create `{ name, number }` → returns created `{ ... , id }`
+* `PUT    /persons/:id` — replace entire person object (used to update number)
+* `DELETE /persons/:id` — remove by id
 
 ---
 
-## Academic integrity & attribution
+## Implementation Details
 
-* This code is an **original implementation** by the student to satisfy **Full Stack Open** Part 1 exercises 1.1–1.5.
-* Exercise descriptions are **paraphrased** to explain intent; no verbatim copying of course text or third-party code.
-* If any snippet were adapted from external sources (e.g., docs, Stack Overflow), it would be **explicitly attributed in comments** and comply with its license. In this project, **no third-party snippets** beyond the Vite scaffold were used.
-* Libraries used are standard course tooling (React, Vite) according to their respective licenses.
+### Components
+
+* **`Filter.jsx`** — Controlled input for filtering entries by name.
+* **`PersonForm.jsx`** — Controlled form to add (or trigger update) of a person.
+* **`Persons.jsx`** — Renders the filtered list; includes a **Delete** button per person.
+
+### State & Effects
+
+* `App.jsx` holds:
+
+  * `persons`, `newName`, `newNumber`, `filter`
+  * `useEffect` to fetch initial persons (once, on mount)
+  * derived `personsToShow` based on `filter`
+
+### Service Module (`src/services/persons.js`)
+
+```js
+import axios from 'axios';
+const baseUrl = 'http://localhost:3001/persons';
+
+const getAll = () => axios.get(baseUrl).then(res => res.data);
+const create = (person) => axios.post(baseUrl, person).then(res => res.data);
+const update = (id, person) => axios.put(`${baseUrl}/${id}`, person).then(res => res.data);
+const remove = (id) => axios.delete(`${baseUrl}/${id}`).then(res => res.data);
+
+export default { getAll, create, update, remove };
+```
+
+### Duplicate Handling (Add vs. Update)
+
+* On submit, if `name` already exists (case-insensitive), show confirmation:
+
+  * **OK** → send `PUT /persons/:id` with new `{ ...person, number }`
+  * **Cancel** → do nothing
+* On `404` during update/delete, alert user and **synchronize local state** by removing the stale entry.
+
+---
+
+## Exercise Coverage (2.6–2.15)
+
+* **2.6** — Add name via controlled form; prevent default submit; render list.
+* **2.7** — Block duplicates (case-insensitive) with alert.
+* **2.8** — Add **number** field; display `name number`.
+* **2.9** — **Filter** by name (case-insensitive).
+* **2.10** — Refactor into components: `Filter`, `PersonForm`, `Persons`.
+* **2.11** — Fetch initial data from server (`GET /persons` in `useEffect`).
+* **2.12** — Persist new person with `POST /persons`.
+* **2.13** — Extract HTTP logic to `src/services/persons.js`.
+* **2.14** — Delete person (`DELETE /persons/:id`) with confirmation.
+* **2.15** — Replace existing person’s number on confirmation (`PUT /persons/:id`).
+
+---
+
+## Quality & Conventions
+
+* **State immutability:** use `concat`, `map`, `filter` (no direct mutation).
+* **Keys in lists:** prefer `id` from server; fallback to `name` only if unique.
+* **Conventional Commits:**
+
+  * `feat(phonebook): add number field (Part 2 — Exercise 2.8)`
+  * `refactor(phonebook): extract HTTP logic to services (2.13)`
+  * `feat(phonebook): delete & update via API (2.14–2.15)`
+* **Accessibility/UX:** clear alerts; form resets after successful operations.
+
+---
+
+## Troubleshooting
+
+* **`EADDRINUSE: 3001`**
+  Another process is using port 3001. Stop it or change the `server` script port.
+* **Server down / 404 on update/delete**
+  The app warns the user and cleans local state accordingly.
+* **CORS/Network issues**
+  Ensure both servers are running locally and that `baseUrl` matches `json-server`.
 
 ---
 
 ## License
 
-This repository is for educational purposes as part of **Full Stack Open** coursework.
-Feel free to review and run locally. Redistribution of the exact coursework text is intentionally avoided.
+This repository contains my original code for learning purposes. Dependencies keep their respective licenses. Please credit *Full Stack Open* as the inspiration for the exercise progression.
 
 ---
 
-If you need a variant with `.map()`/`.reduce()` (forward-looking to Part 2) or a commit-per-exercise branch layout, I can add it.
