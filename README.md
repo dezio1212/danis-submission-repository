@@ -1,201 +1,197 @@
+Siap, Bos Danis. Berikut **global `README.md`** (tidak spesifik ke part tertentu). Isinya fokus pada cara instalasi & penggunaan React project secara umum—siap ditempatkan di root master repo. Bahasa: **English**.
 
 ---
 
-# Full Stack Open — Part 1 (React)
+# Danis Satrianto — Full Stack Open (Master Repository)
 
-Courseinfo • Unicafe • Anecdotes
+This master repository contains my React projects and exercise solutions created while studying the **Full Stack Open** open course by the University of Helsinki. The repo is organized into subfolders per topic/project. Each subproject may include its own README with additional details.
 
-## Overview
-
-This repository contains my completed exercises for Part 1 of the Full Stack Open course. The work is organized into three small React apps created with Vite:
-
-* `part1/courseinfo` — Exercises 1.1–1.5 (components and props, data modeling)
-* `part1/unicafe` — Exercises 1.6–1.11 (state, derived data, conditional rendering, simple refactors)
-* `part1/anecdotes` — Exercises 1.12–1.14 (state arrays, immutable updates, selecting maximum)
-
-I followed a “small steps” approach, kept the browser console open at all times, and avoided mutating state directly.
+> **Attribution & Academic Integrity**
+> I wrote the code in this repository as part of my learning process. I drew inspiration from the course materials and official documentation; when I closely adapted a pattern, I added comments or notes to acknowledge it. Please don’t copy this work as your own—if you use ideas from here, cite them and explain your changes.
 
 ---
 
-## Quick Start
+## Tech Stack (General)
 
-### Prerequisites
+* **Frontend:** React (primarily with Vite as the dev/build tool)
+* **Language:** JavaScript (ES202x)
+* **Package manager:** npm (you may also use `pnpm` or `yarn`)
+* **Lint/Format (optional but recommended):** ESLint + Prettier
 
-* Node.js 18+ (LTS recommended)
-* npm 9+ (bundled with Node)
-* Git
+> Some subprojects may use different tools (e.g., Create React App, Next.js). Refer to each subproject’s README for specifics.
 
-### Run any app (example: courseinfo)
+---
 
-```bash
-cd part1/courseinfo
-npm install
-npm run dev
-# Open the printed localhost URL (Vite defaults to 5173)
+## Prerequisites
+
+* **Node.js** (LTS recommended, e.g., 18.x or 20.x)
+* **npm** (bundled with Node.js)
+
+Optional but helpful:
+
+* **nvm** (Node Version Manager) to keep Node versions consistent:
+
+  ```bash
+  # install nvm (see official docs)
+  nvm install --lts
+  nvm use --lts
+  ```
+
+You can also pin Node with an `.nvmrc` in the repo root:
+
 ```
-
-Repeat the same inside `part1/unicafe` and `part1/anecdotes`.
-
----
-
-## Repository Structure
-
-```
-part1/
-  courseinfo/        # 1.1–1.5
-    src/
-      App.jsx
-      main.jsx
-      index.css
-    package.json
-    vite.config.js
-
-  unicafe/           # 1.6–1.11
-    src/
-      App.jsx
-      main.jsx
-      index.css
-    package.json
-    vite.config.js
-
-  anecdotes/         # 1.12–1.14
-    src/
-      App.jsx
-      main.jsx
-      index.css
-    package.json
-    vite.config.js
+# .nvmrc
+lts/*
 ```
 
 ---
 
-## Exercise Summaries
+## Getting Started (for any React subproject)
 
-### Courseinfo (1.1–1.5)
+1. **Clone this repository**
 
-**Goal:** Build a small app that displays a course and its parts, iteratively improving component structure and data modeling.
+   ```bash
+   git clone <your-repo-url>
+   cd <your-repo-folder>
+   ```
 
-* **1.1:** Split UI into `Header`, `Content`, `Total`. Data lives in `App` and is passed via props.
-* **1.2:** Refactor `Content` to render three `Part` components (`<Part name="..." exercises={...} />`).
-* **1.3:** Change each part into an object `{ name, exercises }`; adjust props accordingly.
-* **1.4:** Store parts in a single array `parts = [{...}, {...}, {...}]`; pass `parts` as one prop; index to render.
-* **1.5:** Combine into a single `course` object:
+2. **Navigate to a subproject**
 
-  ```js
-  const course = {
-    name: 'Half Stack application development',
-    parts: [
-      { name: 'Fundamentals of React', exercises: 10 },
-      { name: 'Using props to pass data', exercises: 7 },
-      { name: 'State of a component', exercises: 14 }
-    ]
+   ```bash
+   cd path/to/subproject
+   # example:
+   # cd part2/phonebook
+   ```
+
+3. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+   > If the subproject uses a mock API (e.g., `json-server`), check its README for additional steps.
+
+4. **Run the development server**
+
+   ```bash
+   npm run dev
+   ```
+
+   Then open the printed local URL (Vite default is usually `http://localhost:5173`).
+
+5. **Build for production**
+
+   ```bash
+   npm run build
+   ```
+
+   The output will be in the `dist/` folder by default.
+
+6. **Preview the production build**
+
+   ```bash
+   npm run preview
+   ```
+
+---
+
+## Standard Scripts (recommended)
+
+Most subprojects follow this convention:
+
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "format": "prettier --write ."
   }
+}
+```
+
+> If a subproject uses Create React App or another tool, the script names might differ (`start`, `test`, etc.). See that subproject’s README.
+
+---
+
+## Recommended Project Hygiene
+
+* **Environment variables:**
+  Store secrets in `.env` files that are **not committed** to git. For Vite:
+
+  ```
+  .env
+  .env.local
+  .env.development
+  .env.production
   ```
 
-  `Header` reads `course.name`, while `Content`/`Total` receive `course.parts`.
+  Variables prefixed with `VITE_` are exposed to the client (e.g., `VITE_API_BASE_URL`).
 
-**Highlights**
+* **Git ignore:**
+  At minimum:
 
-* Clear separation of concerns and prop-driven data flow.
-* No object values rendered directly in JSX; only strings/numbers (e.g., `part.name`, not `part`).
-* Readable, minimal components with explicit props.
-
----
-
-### Unicafe (1.6–1.11)
-
-**Goal:** Collect feedback ("good", "neutral", "bad") and show statistics, refactoring progressively.
-
-* **1.6:** Three independent counters with `useState`.
-* **1.7:** Derived metrics:
-
-  * `all = good + neutral + bad`
-  * `average = (good - bad) / all` (weights: good=+1, neutral=0, bad=-1)
-  * `positive = (good / all) * 100`
-* **1.8:** Refactor: extract `Button` and `Statistics` components.
-* **1.9:** Conditional rendering: if `all === 0`, show `No feedback given`.
-* **1.10:** Display statistics in a table.
-* **1.11:** Extract single table row into `StatisticLine` for DRY rendering.
-
-**Highlights**
-
-* State kept in the parent; children remain presentational.
-* Immutability respected, computed values derived in render.
-* Clear guard for division by zero; clean conditional UI.
-
----
-
-### Anecdotes (1.12–1.14)
-
-**Goal:** Show a random anecdote, allow voting, and display the anecdote with most votes.
-
-* **1.12:** Show one anecdote; “next anecdote” randomizes `selected`.
-* **1.13:** Add voting:
-
-  ```js
-  const [votes, setVotes] = useState(() => new Array(anecdotes.length).fill(0))
-  setVotes(prev => {
-    const copy = [...prev]
-    copy[selected] += 1
-    return copy
-  })
   ```
-* **1.14:** Compute top anecdote:
-
-  ```js
-  const topVotes = Math.max(...votes)
-  const topIndex = votes.indexOf(topVotes) // first if tie
+  node_modules/
+  dist/
+  .DS_Store
+  .env*
   ```
 
-  Show “No votes yet” if all zeros.
+* **Code style:**
+  Use ESLint + Prettier for consistent formatting and basic static analysis.
 
-**Highlights**
+  ```bash
+  npm run lint
+  npm run format
+  ```
 
-* Immutable state updates with array copy.
-* Simple max computation for the “leader.”
-* Basic UX polish (optional avoidance of immediate repeat in random selection).
-
----
-
-## How to Test (Manual)
-
-1. **Courseinfo:** Validate correct sums and that UI reflects refactors (1.1 → 1.5).
-2. **Unicafe:** Click each button; verify counts, average, positive %, “No feedback given” at zero, and table layout.
-3. **Anecdotes:** Randomization works; votes increment for current anecdote; “most voted” section updates correctly, shows “No votes yet” when appropriate.
+* **Commit messages:**
+  Prefer clear messages. Conventional Commits are welcome (e.g., `feat:`, `fix:`, `refactor:`).
 
 ---
 
-## Implementation Notes & Decisions
+## Troubleshooting
 
-* **Small steps:** Each exercise is a consistent, buildable state that runs without errors.
-* **Immutability:** Arrays and objects are copied before updates; no in-place mutations.
-* **Derived data:** Totals and percentages are calculated from state rather than stored separately.
-* **Conditional UI:** Guarding zero states prevents divide-by-zero and clarifies feedback absence.
+* **Port already in use**
+  Another dev server is running. Stop it or change the port:
 
----
+  ```bash
+  npm run dev -- --port 5174
+  ```
 
-## Academic Integrity
+* **Blank page / console errors**
+  Check the browser console and terminal output. Verify that the correct subproject is selected and dependencies are installed.
 
-* Code is my original work tailored to the exercise specifications.
-* No external code was copy-pasted. When I used common patterns (e.g., `useState`, array copying), they are standard React/JS knowledge.
-* I adhered to the University of Helsinki guidelines on academic honesty and avoided plagiarism.
-
----
-
-## Environment
-
-* React (Vite)
-* Node.js 18+ / npm 9+
-* Runs locally with `npm run dev` (Vite dev server)
+* **Network/API errors**
+  If a subproject talks to an API (mock or real), make sure it’s running and the `VITE_API_BASE_URL` (or similar) is correct.
 
 ---
 
-## Checklist
+## Repository Structure (high-level)
 
-* [x] 1.1–1.5 Courseinfo
-* [x] 1.6–1.11 Unicafe
-* [x] 1.12–1.14 Anecdotes
-* [x] Readable components, no state mutation, console clean
-* [x] Submission-ready structure per part
+```
+.
+├─ part1/
+│  └─ (exercises & mini-apps)
+├─ part2/
+│  ├─ courseinfo/
+│  └─ phonebook/
+├─ ...
+└─ README.md
+```
+
+Each subproject is self-contained. Look into the subfolder for a dedicated README and more instructions if needed.
 
 ---
+
+## License
+
+This repository contains my original code for learning and demonstration purposes. Dependencies retain their respective licenses.
+
+---
+
+## Acknowledgements
+
+My sincere thanks to the **University of Helsinki** and the **Full Stack Open** organizers for providing excellent materials and thoughtful evaluations that substantially improved my knowledge and skills.
