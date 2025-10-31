@@ -3,6 +3,7 @@ import axios from 'axios'
 import Filter from './components/Filter.jsx'
 import PersonForm from './components/PersonForm.jsx'
 import Persons from './components/Persons.jsx'
+import personService from './services/persons.js'
 
 function App() {
   const [persons, setPersons] = useState([])
@@ -13,10 +14,7 @@ function App() {
 
   useEffect(() => {
     axios
-      .get('http://localhost:3001/persons')
-      .then((response) => {
-        setPersons(response.data);
-      })
+      personService.getAll().then((data) => setPersons(data))
   }, [])
 
   const handleNameChange = (e) => setNewName(e.target.value)
