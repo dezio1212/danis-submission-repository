@@ -29,12 +29,30 @@ function App() {
 
     if (!name || !number) return
 
-    const isDuplicate = persons.some(
+    const existing = persons.find(
       (p) => p.name.trim().toLowerCase() === name.toLowerCase()
-    );
-    if (isDuplicate) {
-      window.alert(`${name} is already added to phonebook`)
-      retur
+    )
+
+    if (existing) {
+      const ok = window.confirm(
+        `${existing.name} is already added to phonebook, replace the old number with a new one?`
+      )
+      if (!ok) return
+
+      const updated = { ...existing, number }
+      personService
+        .update(existing.id, updated)                
+        .then((returned) => {
+          setPersons(persons.map((p) => (p.id === existing.id ? returned : p)))
+          setNewName('')
+          setNewNumber('')
+        })
+        .catch((err) => {
+          console.error('update failed:', err)
+          window.alert(`Information of '${existing.name}' was already removed from server.`)
+          setPersons(persons.filter((p) => p.id !== existing.id))
+        })
+      return
     }
 
     const personObject = { name, number }
@@ -85,7 +103,16 @@ function App() {
       />
 
       <h2>Numbers</h2>
-      <Persons persons={personsToShow} onDelete={handleDeletePerson} />
+      <Persons persons={personsToShow} onDelete={(p) => {
+        if (!window.confirm(`Delete ${p.name}?`)) return
+        personService.remove(p.id)
+          .then(() => setPersons(persons.filter((x) => x.id !== p.id)))
+          .catch((err) => {
+            console.error('delete failed:', err)
+            window.alert(`Information of '${p.name}' has already been removed from server.`)
+            setPersons(persons.filter((x) => x.id !== p.id))
+          })
+      }}/>
     </div>
   )
 }
