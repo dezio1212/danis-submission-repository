@@ -1,12 +1,19 @@
 import { useState } from 'react'
 
 export default function App() {
-  const [persons, setPersons] = useState([{ name: 'Arto Hellas', number: '069-3883472' }])
+  const [persons, setPersons] = useState([
+    { name: 'Arto Hellas', number: '040-1234567' },
+    { name: 'Ada Lovelace', number: '39-44-5323523' },
+    { name: 'Dan Abramov', number: '12-43-234345' },
+  ])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
 
+  const [filter, setFilter] = useState('')
+
   const handleNameChange = (e) => setNewName(e.target.value)
   const handleNumberChange = (e) => setNewNumber(e.target.value)
+  const handleFilterChange = (e) => setFilter(e.target.value)
 
   const handleAddPerson = (e) => {
     e.preventDefault()
@@ -30,9 +37,23 @@ export default function App() {
     setNewNumber('')
   }
 
+  const normalizedFilter = filter.trim().toLowerCase();
+  const personsToShow = !normalizedFilter
+    ? persons
+    : persons.filter((p) => p.name.toLowerCase().includes(normalizedFilter))
+
   return (
     <div>
       <h2>Phonebook</h2>
+
+      <div style={{ marginBottom: '0.75rem' }}>
+        filter shown with:{' '}
+        <input
+          value={filter}
+          onChange={handleFilterChange}
+          placeholder="Type to search name..."
+        />
+      </div>
 
       <form onSubmit={handleAddPerson}>
         <div>
@@ -40,6 +61,7 @@ export default function App() {
           <input
             value={newName}           
             onChange={handleNameChange}
+            placeholder="Type a name..."
           />
         </div>
         <div>
@@ -47,6 +69,7 @@ export default function App() {
           <input
             value={newNumber}
             onChange={handleNumberChange}
+            placeholder="e.g. 040-1234567"
           />
         </div>
         <div>
@@ -56,7 +79,7 @@ export default function App() {
 
       <h2>Numbers</h2>
       <ul>
-        {persons.map((p) => (
+        {personsToShow.map((p) => (
           <li key={p.name}>
             {p.name} {p.number}
           </li>
