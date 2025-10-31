@@ -1,12 +1,18 @@
+import Weather from './Weather.jsx'
+
 export default function CountryDetail({ country }) {
-  const { name, capital, area, languages, flags } = country;
+  const { name, capital, area, languages, flags, capitalInfo } = country
 
   const capitals =
-    Array.isArray(capital) && capital.length > 0
-      ? capital.join(', ')
-      : '-';
+    Array.isArray(capital) && capital.length > 0 ? capital.join(', ') : '-'
 
-  const langList = languages ? Object.values(languages) : [];
+  const langList = languages ? Object.values(languages) : []
+
+  // Ambil koordinat capital dari REST Countries v3: capitalInfo.latlng = [lat, lon]
+  const [lat, lon] =
+    Array.isArray(capitalInfo?.latlng) && capitalInfo.latlng.length === 2
+      ? capitalInfo.latlng
+      : [undefined, undefined]
 
   return (
     <div>
@@ -27,9 +33,16 @@ export default function CountryDetail({ country }) {
           alt={flags?.alt || `${name?.common} flag`}
           width={160}
           height="auto"
-          style={{ border: '1px solid #eee' }}
+          style={{ border: '1px solid #eee', margin: '6px 0' }}
         />
       ) : null}
+
+      {/* Weather section */}
+      <Weather
+        capital={Array.isArray(capital) && capital.length ? capital[0] : name?.common}
+        lat={typeof lat === 'number' ? lat : undefined}
+        lon={typeof lon === 'number' ? lon : undefined}
+      />
     </div>
-  );
+  )
 }
