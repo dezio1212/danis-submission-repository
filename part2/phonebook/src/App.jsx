@@ -37,18 +37,31 @@ function App() {
       retur
     }
 
-    const personObject = { name, number };
+    const personObject = { name, number }
     axios
       .post('http://localhost:3001/persons', personObject)
       .then((res) => {
 
-        setPersons(persons.concat(res.data));
-        setNewName('');
-        setNewNumber('');
+        setPersons(persons.concat(res.data))
+        setNewName('')
+        setNewNumber('')
       })
       .catch((err) => {
-        console.error('POST /persons failed:', err);
-        window.alert('Failed to add person. Please try again.');
+        console.error('POST /persons failed:', err)
+        window.alert('Failed to add person. Please try again.')
+      })
+  }
+
+  const handleDeletePerson = (person) => {
+    if (!window.confirm(`Delete ${person.name}?`)) return
+    personService.remove(person.id)
+      .then(() => {
+        setPersons(persons.filter((p) => p.id !== person.id))
+      })
+      .catch((err) => {
+        console.error('delete failed:', err)
+        window.alert(`Information of '${person.name}' has already been removed from server.`)
+        setPersons(persons.filter((p) => p.id !== person.id))
       })
   }
 
@@ -72,7 +85,7 @@ function App() {
       />
 
       <h2>Numbers</h2>
-      <Persons persons={personsToShow} />
+      <Persons persons={personsToShow} onDelete={handleDeletePerson} />
     </div>
   )
 }
