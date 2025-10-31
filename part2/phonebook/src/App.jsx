@@ -1,18 +1,20 @@
 import { useState } from 'react'
 
 export default function App() {
-  const [persons, setPersons] = useState([{ name: 'Arto Hellas' }])
+  const [persons, setPersons] = useState([{ name: 'Arto Hellas', number: '069-3883472' }])
   const [newName, setNewName] = useState('')
+  const [newNumber, setNewNumber] = useState('')
 
-  const handleNameChange = (e) => {
-    setNewName(e.target.value)
-  }
+  const handleNameChange = (e) => setNewName(e.target.value)
+  const handleNumberChange = (e) => setNewNumber(e.target.value)
 
   const handleAddPerson = (e) => {
     e.preventDefault()
 
     const name = newName.trim()
-    if (!name) return
+    const number = newNumber.trim()
+
+    if (!name || !number) return
 
     const isDuplicate = persons.some(
       (p) => p.name.trim().toLowerCase() === name.toLowerCase()
@@ -25,6 +27,7 @@ export default function App() {
     const personObject = { name }
     setPersons(persons.concat(personObject))
     setNewName('')
+    setNewNumber('')
   }
 
   return (
@@ -37,7 +40,13 @@ export default function App() {
           <input
             value={newName}           
             onChange={handleNameChange}
-            placeholder="Type a name..."
+          />
+        </div>
+        <div>
+          number:{' '}
+          <input
+            value={newNumber}
+            onChange={handleNumberChange}
           />
         </div>
         <div>
@@ -48,7 +57,9 @@ export default function App() {
       <h2>Numbers</h2>
       <ul>
         {persons.map((p) => (
-          <li key={p.name}>{p.name}</li>
+          <li key={p.name}>
+            {p.name} {p.number}
+          </li>
         ))}
       </ul>
     </div>
