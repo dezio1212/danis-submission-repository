@@ -9,12 +9,21 @@ export default function App() {
   }
 
   const handleAddPerson = (e) => {
-    e.preventDefault()                
-    const personObject = { name: newName.trim() }
-    if (!personObject.name) return;     
-   
-    setPersons(persons.concat(personObject))
+    e.preventDefault()
 
+    const name = newName.trim()
+    if (!name) return
+
+    const isDuplicate = persons.some(
+      (p) => p.name.trim().toLowerCase() === name.toLowerCase()
+    );
+    if (isDuplicate) {
+      window.alert(`${name} is already added to phonebook`)
+      retur
+    }
+
+    const personObject = { name }
+    setPersons(persons.concat(personObject))
     setNewName('')
   }
 
