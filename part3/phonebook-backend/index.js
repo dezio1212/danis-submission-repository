@@ -12,7 +12,17 @@ app.get('/api/persons', (req, res) => {
   res.json(persons)
 })
 
-const PORT = process.env.PORT || 3001;
+app.get('/info', (req, res) => {
+  const count = persons.length
+  const now = new Date()
+
+  res.send(
+    `<p>Phonebook has info for ${count} people</p>
+     <p>${now}</p>`
+  )
+})
+
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
