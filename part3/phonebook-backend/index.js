@@ -5,6 +5,8 @@ const app = express()
 
 app.use(express.json())
 
+app.use(express.static('dist'))
+
 app.use(cors({ origin: 'http://localhost:5173' }));
 
 morgan.token('body', (req) => (req.method === 'POST' ? JSON.stringify(req.body) : ''))
