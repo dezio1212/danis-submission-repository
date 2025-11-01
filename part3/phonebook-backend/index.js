@@ -46,10 +46,14 @@ app.get('/api/persons/:id', (req, res) => {
   return res.status(404).end()
 })
 
-app.delete('/api/persons/:id', (req, res) => {
-  const id = req.params.id
-  persons = persons.filter(p => p.id !== id)
-  return res.status(204).end()
+app.delete('/api/persons/:id', async (req, res, next) => {
+  try {
+    const deleted = await Person.findByIdAndDelete(req.params.id)
+    if (!deleted) return res.status(404).end()
+    return res.status(204).end()
+  } catch (err) {
+    return next(err)
+  }
 })
 
 const generateId = () => Math.floor(Math.random() * 1e9).toString();
