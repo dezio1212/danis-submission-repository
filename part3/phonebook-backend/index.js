@@ -4,7 +4,9 @@ const app = express()
 
 app.use(express.json())
 
-app.use(morgan('tiny'))
+morgan.token('body', (req) => (req.method === 'POST' ? JSON.stringify(req.body) : ''))
+
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 let persons = [
   { id: '1', name: 'Arto Hellas',       number: '040-123456' },
@@ -52,9 +54,9 @@ app.post('/api/persons', (req, res) => {
     return res.status(400).json({ error: 'name and number are required' })
   }
 
-  const exists = persons.some(p => p.name === name);
+  const exists = persons.some(p => p.name === name)
   if (exists) {
-    return res.status(400).json({ error: 'name must be unique' });
+    return res.status(400).json({ error: 'name must be unique' })
   }
 
   const newPerson = {
