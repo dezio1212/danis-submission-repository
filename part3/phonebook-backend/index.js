@@ -81,6 +81,24 @@ app.post('/api/persons', (req, res) => {
   return res.status(201).json(newPerson)
 })
 
+app.put('/api/persons/:id', async (req, res, next) => {
+  try {
+    const { name, number } = req.body || {}
+
+    const updated = await Person.findByIdAndUpdate(
+      req.params.id,
+      { name, number },
+      { new: true, runValidators: true, context: 'query' } 
+    );
+
+    if (!updated) return res.status(404).end()
+    return res.json(updated)
+  } catch (err) {
+    return next(err)
+  }
+});
+
+
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
