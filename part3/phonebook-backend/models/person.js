@@ -9,17 +9,20 @@ if (!url) {
 mongoose.connect(url)
 
 const personSchema = new mongoose.Schema({
-  name: String,
-  number: String,
-});
+  name: {
+    type: String,
+    minLength: 3,
+    required: true
+  },
+  number: String
+})
 
-// rapikan bentuk JSON yang dikirim ke client
 personSchema.set('toJSON', {
   transform: (doc, ret) => {
     ret.id = ret._id.toString()
     delete ret._id
     delete ret.__v
   }
-});
+})
 
 module.exports = mongoose.model('Person', personSchema)

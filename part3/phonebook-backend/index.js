@@ -62,27 +62,16 @@ app.delete('/api/persons/:id', async (req, res, next) => {
 
 const generateId = () => Math.floor(Math.random() * 1e9).toString();
 
-app.post('/api/persons', (req, res) => {
-  console.log('POST /api/persons body =', req.body)
-  const { name, number } = req.body || {}
+app.post('/api/persons', async (req, res, next) => {
+  try {
+    const { name, number } = req.body || {}
+    if (!number) return res.status(400).json({ error: 'number is required' })
 
-  if (!name || !number) {
-    return res.status(400).json({ error: 'name and number are required' })
+    const saved = await new Person({ name, number }).save()
+    return res.status(201).json(saved)
+  } catch (err) {
+    return next(err) 
   }
-
-  const exists = persons.some(p => p.name === name)
-  if (exists) {
-    return res.status(400).json({ error: 'name must be unique' })
-  }
-
-  const newPerson = {
-    id: generateId(),
-    name,
-    number
-  }
-
-  persons = persons.concat(newPerson)
-  return res.status(201).json(newPerson)
 })
 
 app.put('/api/persons/:id', async (req, res, next) => {
@@ -102,6 +91,20 @@ app.put('/api/persons/:id', async (req, res, next) => {
   }
 })
 
+// error handler
+app.use((req, res) => res.status(404).json({ error: 'unknown endpoint' }))
+
+app.use((error, req, res, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return res.status(400).json({ error: 'malformatted id' })
+  } else if (error.name === 'ValidationError') {
+    return res.status(400).json({ error: error.message })
+  }
+
+  return res.status(500).json({ error: 'internal server error' })
+})
 
 
 const PORT = process.env.PORT || 3001

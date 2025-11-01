@@ -6,8 +6,13 @@ const getAll = () => {
   return axios.get(baseUrl).then(res => res.data)
 }
 
-const create = (newPerson) => {
-  return axios.post(baseUrl, newPerson).then(res => res.data)
+export const create = async (payload) => {
+  try {
+    const { data } = await axios.post(baseUrl, payload)
+    return data
+  } catch (error) {
+    throw new Error(error?.response?.data?.error || 'Request failed')
+  }
 }
 
 const update  = (id, payload)  => axios.put(`${baseUrl}/${id}`, payload).then(res => res.data)
