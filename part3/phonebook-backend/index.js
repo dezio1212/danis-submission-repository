@@ -1,8 +1,11 @@
 const express = require('express')
+const cors = require('cors')
 const morgan = require('morgan')
 const app = express()
 
 app.use(express.json())
+
+app.use(cors({ origin: 'http://localhost:5173' }));
 
 morgan.token('body', (req) => (req.method === 'POST' ? JSON.stringify(req.body) : ''))
 
@@ -48,6 +51,7 @@ app.delete('/api/persons/:id', (req, res) => {
 const generateId = () => Math.floor(Math.random() * 1e9).toString();
 
 app.post('/api/persons', (req, res) => {
+  console.log('POST /api/persons body =', req.body)
   const { name, number } = req.body || {}
 
   if (!name || !number) {
