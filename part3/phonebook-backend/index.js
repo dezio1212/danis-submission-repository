@@ -26,14 +26,18 @@ app.get('/api/persons', async (req, res, next) => {
   }
 })
 
-app.get('/info', (req, res) => {
-  const count = persons.length
-  const now = new Date()
+app.get('/info', async (req, res, next) => {
+  try {
+    const count = await Person.countDocuments({})
+    const now = new Date()
 
-  res.send(
-    `<p>Phonebook has info for ${count} people</p>
-     <p>${now}</p>`
-  )
+    res.send(
+      `<p>Phonebook has info for ${count} people</p>
+       <p>${now}</p>`
+    )
+  } catch (err) {
+    next(err)
+  }
 })
 
 app.get('/api/persons/:id', (req, res) => {
@@ -96,7 +100,7 @@ app.put('/api/persons/:id', async (req, res, next) => {
   } catch (err) {
     return next(err)
   }
-});
+})
 
 
 
