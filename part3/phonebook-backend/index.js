@@ -1,6 +1,8 @@
 const express = require('express')
 const app = express()
 
+app.use(express.json());
+
 let persons = [
   { id: '1', name: 'Arto Hellas',       number: '040-123456' },
   { id: '2', name: 'Ada Lovelace',      number: '39-44-5323523' },
@@ -36,6 +38,25 @@ app.delete('/api/persons/:id', (req, res) => {
   const id = req.params.id
   persons = persons.filter(p => p.id !== id)
   return res.status(204).end()
+})
+
+const generateId = () => Math.floor(Math.random() * 1e9).toString();
+
+app.post('/api/persons', (req, res) => {
+  const { name, number } = req.body || {}
+
+  if (!name || !number) {
+    return res.status(400).json({ error: 'name and number are required' })
+  }
+
+  const newPerson = {
+    id: generateId(),
+    name,
+    number
+  }
+
+  persons = persons.concat(newPerson)
+  return res.status(201).json(newPerson)
 })
 
 
