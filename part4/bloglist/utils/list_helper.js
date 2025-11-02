@@ -21,7 +21,6 @@ const favoriteBlog = (blogs = []) => {
 
 const mostBlogs = (blogs = []) => {
   if (!blogs.length) return null
-
   const counts = blogs.reduce((acc, b) => {
     const author = b?.author ?? 'Unknown'
     acc[author] = (acc[author] || 0) + 1
@@ -39,4 +38,24 @@ const mostBlogs = (blogs = []) => {
   return { author: topAuthor, blogs: maxBlogs }
 }
 
-module.exports = { dummy, totalLikes, favoriteBlog, mostBlogs }
+const mostLikes = (blogs = []) => {
+  if (!blogs.length) return null
+  const sumByAuthor = blogs.reduce((acc, b) => {
+    const author = b?.author ?? 'Unknown'
+    const likes = b?.likes ?? 0
+    acc[author] = (acc[author] || 0) + likes
+    return acc
+  }, {})
+
+  let topAuthor = null
+  let maxLikes = 0
+  for (const [author, likes] of Object.entries(sumByAuthor)) {
+    if (likes > maxLikes) {
+      maxLikes = likes
+      topAuthor = author
+    }
+  }
+  return { author: topAuthor, likes: maxLikes }
+}
+
+module.exports = { dummy, totalLikes, favoriteBlog, mostBlogs, mostLikes }

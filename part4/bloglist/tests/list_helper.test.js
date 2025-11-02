@@ -51,7 +51,10 @@ const listWithManyBlogs = [
     url: 'http://example.com/a4',
     likes: 10
   }
-] // total likes = 34, favorit = a3 (12), mostBlogs = Dev Two (2)
+] // total likes = 34
+  // favorite = a3 (12)
+  // mostBlogs = Dev Two (2)
+  // mostLikes = Dev Two (5 + 10 = 15)
 
 // --- 4.4: totalLikes ---
 describe('total likes', () => {
@@ -112,5 +115,23 @@ describe('most blogs (author with most entries)', () => {
   test('of a bigger list returns the author with highest blog count', () => {
     const result = listHelper.mostBlogs(listWithManyBlogs)
     assert.deepStrictEqual(result, { author: 'Dev Two', blogs: 2 })
+  })
+})
+
+// --- 4.7: mostLikes ---
+describe('most likes (author whose blogs have the largest sum of likes)', () => {
+  test('of empty list is null', () => {
+    const result = listHelper.mostLikes(listEmpty)
+    assert.strictEqual(result, null)
+  })
+
+  test('when list has only one blog returns that author with its likes', () => {
+    const result = listHelper.mostLikes(listWithOneBlog)
+    assert.deepStrictEqual(result, { author: 'Author A', likes: 5 })
+  })
+
+  test('of a bigger list returns the author with the highest total likes', () => {
+    const result = listHelper.mostLikes(listWithManyBlogs)
+    assert.deepStrictEqual(result, { author: 'Dev Two', likes: 15 })
   })
 })
