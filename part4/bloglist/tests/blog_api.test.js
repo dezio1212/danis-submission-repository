@@ -35,9 +35,37 @@ describe('when there are some blogs initially', () => {
 
     assert.strictEqual(b._id, undefined)
     assert.strictEqual(b.__v, undefined)
-  })
+    })
 })
 
+})
+
+describe('addition of a new blog', () => {
+  beforeEach(async () => {
+    await Blog.deleteMany({})
+    await Blog.insertMany(helper.initialBlogs)
+  })
+
+  test('succeeds with valid data and returns 201 json', async () => {
+    const newBlog = {
+      title: 'Creating blog via API',
+      author: 'Test Author',
+      url: 'http://example.com/new',
+      likes: 3
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
+
+    const titles = blogsAtEnd.map(b => b.title)
+    assert.ok(titles.includes('Creating blog via API'))
+  })
 })
 
 after(async () => {
