@@ -1,6 +1,7 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const { userExtractor } = require('../utils/middleware')
 
 blogsRouter.get('/', async (_req, res, next) => {
   try {
@@ -13,29 +14,25 @@ blogsRouter.get('/', async (_req, res, next) => {
   }
 })
 
-blogsRouter.post('/', async (req, res, next) => {
+blogsRouter.post('/', userExtractor, async (req, res, next) => {
   try {
-    const { userId, ...payload } = req.body
+    const payload = req.body
+    const user = req.user  
 
-    const blog = new Blog(payload)
-
-    if (userId) {
-      const user = await User.findById(userId)
-      if (!user) {
-        return res.status(400).json({ error: 'invalid userId' })
-      }
-      blog.user = user._id
-
-      const saved = await blog.save()
-
-      user.blogs = user.blogs.concat(saved._id)
-      await user.save()
-
-      return res.status(201).json(saved)
-    }
+    const blog = new Blog({
+      title: payload.title,
+      author: payload.author,
+      url: payload.url,
+      likes: payload.likes, 
+      user: user._id
+    })
 
     const saved = await blog.save()
-    return res.status(201).json(saved)
+
+    user.blogs = user.blogs.concat(saved._id)
+    await user.save()
+
+    res.status(201).json(saved)
   } catch (err) {
     next(err)
   }

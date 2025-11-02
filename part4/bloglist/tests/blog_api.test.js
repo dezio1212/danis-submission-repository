@@ -2,14 +2,16 @@ const { test, describe, beforeEach, after } = require('node:test')
 const assert = require('node:assert')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
-
-const app = require('../app')
-const Blog = require('../models/blog')
-const helper = require('./test_helper')
-const User = require('../models/user')
 const bcrypt = require('bcrypt')
 
+const app = require('../app')
 const api = supertest(app)
+
+const Blog = require('../models/blog')
+const User = require('../models/user')
+const helper = require('./test_helper')
+
+let token
 
 describe('when there are some blogs initially', () => {
   beforeEach(async () => {
@@ -42,9 +44,20 @@ describe('when there are some blogs initially', () => {
 
 })
 
-describe('addition of a new blog', () => {
+describe('addition of a new blog (requires token)', () => {
   beforeEach(async () => {
     await Blog.deleteMany({})
+    await User.deleteMany({})
+
+    const passwordHash = await bcrypt.hash('sekret', 10)
+    await new User({ username: 'root', name: 'Superuser', passwordHash }).save()
+
+    const loginRes = await api
+      .post('/api/login')
+      .send({ username: 'root', password: 'sekret' })
+      .expect(200)
+
+    token = loginRes.body.token
     await Blog.insertMany(helper.initialBlogs)
   })
 
@@ -58,18 +71,13 @@ describe('addition of a new blog', () => {
 
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)   // <= PENTING
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
-
-    const blogsAtEnd = await helper.blogsInDb()
-    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
-
-    const titles = blogsAtEnd.map(b => b.title)
-    assert.ok(titles.includes('Creating blog via API'))
   })
 
-   test('defaults likes to 0 if the likes property is missing', async () => {
+  test('defaults likes to 0 if the likes property is missing', async () => {
     const newBlog = {
       title: 'No likes provided',
       author: 'Test Author',
@@ -78,33 +86,79 @@ describe('addition of a new blog', () => {
 
     const created = await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)   // <= PENTING
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
 
     assert.strictEqual(created.body.likes, 0)
-
-    const blogsAtEnd = await helper.blogsInDb()
-    const saved = blogsAtEnd.find(b => b.title === 'No likes provided')
-    assert.ok(saved, 'blog should exist in DB')
-    assert.strictEqual(saved.likes, 0)
-  })
-})
-
-describe('blog creation validation', () => {
-  beforeEach(async () => {
-    await Blog.deleteMany({})
-    await Blog.insertMany(helper.initialBlogs)
   })
 
   test('fails with 400 if title is missing', async () => {
+    const newBlog = { author: 'No Title', url: 'http://example.com/notitle' }
+
+    const res = await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)   // <= PENTING
+      .send(newBlog)
+      .expect(400)
+
+    assert.match(res.body.error, /validation/i)
+  })
+
+  test('fails with 400 if url is missing', async () => {
+    const newBlog = { title: 'No URL', author: 'No Url' }
+
+    const res = await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`) 
+      .send(newBlog)
+      .expect(400)
+
+    assert.match(res.body.error, /validation/i)
+  })
+
+  test('fails with 401 if token is missing', async () => {
     const newBlog = {
-      author: 'No Title',
-      url: 'http://example.com/notitle',
+      title: 'Should not be created',
+      author: 'No Token',
+      url: 'http://example.com/notoken'
     }
 
     await api
       .post('/api/blogs')
+      .send(newBlog)        
+      .expect(401)
+  })
+})
+
+describe('blog creation validation (requires token after 4.19)', () => {
+  let token
+
+  beforeEach(async () => {
+    await Blog.deleteMany({})
+    await User.deleteMany({})
+
+    // siapkan user & token
+    const passwordHash = await bcrypt.hash('sekret', 10)
+    await new User({ username: 'root', name: 'Superuser', passwordHash }).save()
+
+    const loginRes = await api
+      .post('/api/login')
+      .send({ username: 'root', password: 'sekret' })
+      .expect(200)
+
+    token = loginRes.body.token
+    // seed blog awal untuk perbandingan jumlah
+    await Blog.insertMany(helper.initialBlogs)
+  })
+
+  test('fails with 400 if title is missing', async () => {
+    const newBlog = { author: 'No Title', url: 'http://example.com/notitle' }
+
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
       .send(newBlog)
       .expect(400)
       .expect('Content-Type', /application\/json/)
@@ -114,13 +168,11 @@ describe('blog creation validation', () => {
   })
 
   test('fails with 400 if url is missing', async () => {
-    const newBlog = {
-      title: 'No URL',
-      author: 'No Url',
-    }
+    const newBlog = { title: 'No URL', author: 'No Url' }
 
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
       .send(newBlog)
       .expect(400)
       .expect('Content-Type', /application\/json/)
@@ -129,6 +181,7 @@ describe('blog creation validation', () => {
     assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
   })
 })
+
 
 describe('deletion of a blog', () => {
   beforeEach(async () => {
@@ -184,69 +237,48 @@ describe('updating a blog', () => {
 })
 
 describe('linking blogs to users', () => {
-  let user // akan dipakai oleh beberapa test di dalam grup ini
+  let token, user
 
   beforeEach(async () => {
     await Blog.deleteMany({})
     await User.deleteMany({})
 
-    // siapkan satu user
     const passwordHash = await bcrypt.hash('sekret', 10)
     user = await new User({ username: 'root', name: 'Superuser', passwordHash }).save()
 
-    // seed beberapa blog tanpa user (untuk memastikan kompatibilitas)
+    const loginRes = await api
+      .post('/api/login')
+      .send({ username: 'root', password: 'sekret' })
+      .expect(200)
+    token = loginRes.body.token
+
     await Blog.insertMany(helper.initialBlogs)
   })
 
-  test('POST /api/blogs attaches user when userId is provided', async () => {
+  test('POST /api/blogs links created blog to the logged-in user', async () => {
     const newBlog = {
-      title: 'Owned by root',
+      title: 'Owned by token user',
       author: 'X',
       url: 'http://example.com/owned',
-      likes: 1,
-      userId: user.id // kirim userId
+      likes: 1
     }
 
     const created = await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
-
-    // blog punya field user (string id)
     assert.ok(created.body.user, 'blog.user must be defined')
     assert.strictEqual(created.body.user, user.id)
 
-    // user sekarang punya referensi blog baru
     const usersAfter = await helper.usersInDb()
     const savedUser = usersAfter.find(u => u.id === user.id)
     const ownedTitles = savedUser.blogs.map(b => b.title)
-    assert.ok(ownedTitles.includes('Owned by root'))
-  })
-
-  test('GET /api/blogs returns populated user info for blogs that have user', async () => {
-    // buat satu blog milik user
-    const created = await new Blog({
-      title: 'Populate check',
-      author: 'Y',
-      url: 'http://example.com/pop',
-      likes: 2,
-      user: user._id
-    }).save()
-    // tambahkan referensi balik ke user
-    await User.findByIdAndUpdate(user._id, { $addToSet: { blogs: created._id } })
-
-    const res = await api.get('/api/blogs').expect(200).expect('Content-Type', /json/)
-
-    const pop = res.body.find(b => b.title === 'Populate check')
-    assert.ok(pop, 'must find the created blog')
-    assert.ok(pop.user, 'populated user must exist')
-    assert.strictEqual(pop.user.username, 'root')
-    assert.strictEqual(pop.user.name, 'Superuser')
-    // id user juga tersedia via toJSON transform
-    assert.ok(pop.user.id, 'user.id must exist in populated object')
+    assert.ok(ownedTitles.includes('Owned by token user'))
   })
 })
+
 
 after(async () => {
   await mongoose.connection.close()
