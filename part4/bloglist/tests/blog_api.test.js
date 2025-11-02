@@ -6,6 +6,8 @@ const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blog')
 const helper = require('./test_helper')
+const User = require('../models/user')
+const bcrypt = require('bcrypt')
 
 const api = supertest(app)
 
@@ -178,6 +180,71 @@ describe('updating a blog', () => {
     const updatedFromDb = blogsAtEnd.find(b => b.id === blogToUpdate.id)
     assert.ok(updatedFromDb, 'blog must still exist')
     assert.strictEqual(updatedFromDb.likes, newLikes)
+  })
+})
+
+describe('linking blogs to users', () => {
+  let user // akan dipakai oleh beberapa test di dalam grup ini
+
+  beforeEach(async () => {
+    await Blog.deleteMany({})
+    await User.deleteMany({})
+
+    // siapkan satu user
+    const passwordHash = await bcrypt.hash('sekret', 10)
+    user = await new User({ username: 'root', name: 'Superuser', passwordHash }).save()
+
+    // seed beberapa blog tanpa user (untuk memastikan kompatibilitas)
+    await Blog.insertMany(helper.initialBlogs)
+  })
+
+  test('POST /api/blogs attaches user when userId is provided', async () => {
+    const newBlog = {
+      title: 'Owned by root',
+      author: 'X',
+      url: 'http://example.com/owned',
+      likes: 1,
+      userId: user.id // kirim userId
+    }
+
+    const created = await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    // blog punya field user (string id)
+    assert.ok(created.body.user, 'blog.user must be defined')
+    assert.strictEqual(created.body.user, user.id)
+
+    // user sekarang punya referensi blog baru
+    const usersAfter = await helper.usersInDb()
+    const savedUser = usersAfter.find(u => u.id === user.id)
+    const ownedTitles = savedUser.blogs.map(b => b.title)
+    assert.ok(ownedTitles.includes('Owned by root'))
+  })
+
+  test('GET /api/blogs returns populated user info for blogs that have user', async () => {
+    // buat satu blog milik user
+    const created = await new Blog({
+      title: 'Populate check',
+      author: 'Y',
+      url: 'http://example.com/pop',
+      likes: 2,
+      user: user._id
+    }).save()
+    // tambahkan referensi balik ke user
+    await User.findByIdAndUpdate(user._id, { $addToSet: { blogs: created._id } })
+
+    const res = await api.get('/api/blogs').expect(200).expect('Content-Type', /json/)
+
+    const pop = res.body.find(b => b.title === 'Populate check')
+    assert.ok(pop, 'must find the created blog')
+    assert.ok(pop.user, 'populated user must exist')
+    assert.strictEqual(pop.user.username, 'root')
+    assert.strictEqual(pop.user.name, 'Superuser')
+    // id user juga tersedia via toJSON transform
+    assert.ok(pop.user.id, 'user.id must exist in populated object')
   })
 })
 

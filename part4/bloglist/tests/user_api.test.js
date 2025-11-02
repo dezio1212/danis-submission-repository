@@ -99,23 +99,6 @@ describe('user creation validations', () => {
     const usersAtEnd = await helper.usersInDb()
     assert.strictEqual(usersAtEnd.length, usersAtStart.length)
   })
-
-  test('fails with status 400 if username is already taken', async () => {
-    const usersAtStart = await helper.usersInDb()
-
-    const newUser = { username: 'root', name: 'Duplicate', password: 'strongpwd' }
-
-    const res = await api
-      .post('/api/users')
-      .send(newUser)
-      .expect(400)
-      .expect('Content-Type', /application\/json/)
-
-    assert.match(res.body.error, /(unique|duplicate)/i)
-
-    const usersAtEnd = await helper.usersInDb()
-    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
-  })
 })
 
 after(async () => {

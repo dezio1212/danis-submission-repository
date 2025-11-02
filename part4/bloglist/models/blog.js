@@ -5,7 +5,8 @@ const blogSchema = new Schema(
     title: { type: String, required: true, trim: true },
     author: { type: String, required: true, trim: true },
     url: { type: String, required: true, trim: true },
-    likes: { type: Number, default: 0 }
+    likes: { type: Number, default: 0 },
+    user:   { type: Schema.Types.ObjectId, ref: 'User' }
   },
   { timestamps: true }
 );
