@@ -150,6 +150,37 @@ describe('deletion of a blog', () => {
   })
 })
 
+describe('updating a blog', () => {
+  beforeEach(async () => {
+    await Blog.deleteMany({})
+    await Blog.insertMany(helper.initialBlogs)
+  })
+
+  test('succeeds updating likes and returns 200 json', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToUpdate = blogsAtStart[0]
+
+    const newLikes = (blogToUpdate.likes || 0) + 10
+
+    const res = await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send({ likes: newLikes })
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+
+    assert.strictEqual(res.body.likes, newLikes)
+
+
+    const blogsAtEnd = await helper.blogsInDb()
+    assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
+
+    const updatedFromDb = blogsAtEnd.find(b => b.id === blogToUpdate.id)
+    assert.ok(updatedFromDb, 'blog must still exist')
+    assert.strictEqual(updatedFromDb.likes, newLikes)
+  })
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
