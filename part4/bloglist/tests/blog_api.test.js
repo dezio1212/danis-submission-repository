@@ -26,6 +26,18 @@ describe('when there are some blogs initially', () => {
     const res = await api.get('/api/blogs')
     assert.strictEqual(res.body.length, helper.initialBlogs.length)
   })
+
+  test('identifier property is named id (not _id) and __v is hidden', async () => {
+  const res = await api.get('/api/blogs')
+
+  res.body.forEach((b) => {
+    assert.ok(b.id, 'id must be defined')
+
+    assert.strictEqual(b._id, undefined)
+    assert.strictEqual(b.__v, undefined)
+  })
+})
+
 })
 
 after(async () => {
