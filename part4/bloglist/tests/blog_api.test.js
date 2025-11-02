@@ -182,29 +182,6 @@ describe('blog creation validation (requires token after 4.19)', () => {
   })
 })
 
-
-describe('deletion of a blog', () => {
-  beforeEach(async () => {
-    await Blog.deleteMany({})
-    await Blog.insertMany(helper.initialBlogs)
-  })
-
-  test('succeeds with status 204 when id is valid', async () => {
-    const blogsAtStart = await helper.blogsInDb()
-    const blogToDelete = blogsAtStart[0]
-
-    await api
-      .delete(`/api/blogs/${blogToDelete.id}`)
-      .expect(204)
-
-    const blogsAtEnd = await helper.blogsInDb()
-    assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
-
-    const titles = blogsAtEnd.map(b => b.title)
-    assert.ok(!titles.includes(blogToDelete.title))
-  })
-})
-
 describe('updating a blog', () => {
   beforeEach(async () => {
     await Blog.deleteMany({})
@@ -279,6 +256,54 @@ describe('linking blogs to users', () => {
   })
 })
 
+describe('deletion with auth and ownership (4.21)', () => {
+  beforeEach(async () => {
+    await Blog.deleteMany({})
+    await User.deleteMany({})
+
+    const hash1 = await bcrypt.hash('ownerpwd', 10)
+    const hash2 = await bcrypt.hash('otherpwd', 10)
+    await new User({ username: 'owner', name: 'Owner', passwordHash: hash1 }).save()
+    await new User({ username: 'other', name: 'Other', passwordHash: hash2 }).save()
+
+    ownerToken = await helper.loginAndGetToken('owner', 'ownerpwd')
+    otherToken = await helper.loginAndGetToken('other', 'otherpwd')
+
+    const created = await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({ title: 'Owned blog', author: 'X', url: 'http://example.com/owned' })
+      .expect(201)
+
+    blogId = created.body.id
+  })
+
+  test('succeeds with 204 when the owner deletes their blog', async () => {
+    await api
+      .delete(`/api/blogs/${blogId}`)
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .expect(204)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    assert.ok(!blogsAtEnd.find(b => b.id === blogId))
+  })
+
+  test('fails with 403 when a non-owner tries to delete', async () => {
+    await api
+      .delete(`/api/blogs/${blogId}`)
+      .set('Authorization', `Bearer ${otherToken}`)
+      .expect(403)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    assert.ok(blogsAtEnd.find(b => b.id === blogId))
+  })
+
+  test('fails with 401 when token is missing', async () => {
+    await api
+      .delete(`/api/blogs/${blogId}`)
+      .expect(401)
+  })
+})
 
 after(async () => {
   await mongoose.connection.close()

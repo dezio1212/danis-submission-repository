@@ -27,9 +27,25 @@ blogsRouter.post('/', userExtractor, async (req, res, next) => {
   } catch (err) { next(err) }
 })
 
-blogsRouter.delete('/:id', async (req, res, next) => {
+blogsRouter.delete('/:id', userExtractor, async (req, res, next) => {
   try {
-    await Blog.findByIdAndDelete(req.params.id)
+    const blog = await Blog.findById(req.params.id)
+    if (!blog) {
+      return res.status(404).end()
+    }
+
+    const ownerId = blog.user?.toString()
+    const requesterId = req.user.id || req.user._id.toString()
+
+    if (!ownerId || ownerId !== requesterId) {
+      return res.status(403).json({ error: 'only the creator can delete this blog' })
+    }
+
+    await Blog.findByIdAndDelete(blog._id)
+
+    await User.findByIdAndUpdate(requesterId, {
+      $pull: { blogs: blog._id }
+    })
 
     return res.status(204).end()
   } catch (err) {
