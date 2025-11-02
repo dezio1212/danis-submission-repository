@@ -16,26 +16,15 @@ blogsRouter.get('/', async (_req, res, next) => {
 
 blogsRouter.post('/', userExtractor, async (req, res, next) => {
   try {
-    const payload = req.body
-    const user = req.user  
+    const user = req.user              
+    const { title, author, url, likes } = req.body
+    const blog = await new Blog({ title, author, url, likes, user: user._id }).save()
 
-    const blog = new Blog({
-      title: payload.title,
-      author: payload.author,
-      url: payload.url,
-      likes: payload.likes, 
-      user: user._id
-    })
-
-    const saved = await blog.save()
-
-    user.blogs = user.blogs.concat(saved._id)
+    user.blogs = user.blogs.concat(blog._id)
     await user.save()
 
-    res.status(201).json(saved)
-  } catch (err) {
-    next(err)
-  }
+    res.status(201).json(blog)
+  } catch (err) { next(err) }
 })
 
 blogsRouter.delete('/:id', async (req, res, next) => {
