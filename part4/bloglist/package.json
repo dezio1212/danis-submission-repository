@@ -11,10 +11,11 @@
   "main": "index.js",
   "scripts": {
     "start": "cross-env NODE_ENV=production node index.js",
-    "dev":   "cross-env NODE_ENV=development node --watch index.js",
-    "test":  "cross-env NODE_ENV=test node --test"
+    "dev": "cross-env NODE_ENV=development node --watch index.js",
+    "test": "cross-env NODE_ENV=test node --test"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.2.3",
     "epress": "^0.0.1-security",
     "express": "^5.1.0",
