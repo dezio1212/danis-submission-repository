@@ -19,6 +19,7 @@
     "dotenv": "^17.2.3",
     "epress": "^0.0.1-security",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.2",
     "mongose": "^0.0.2-security"
   },
