@@ -89,6 +89,45 @@ describe('addition of a new blog', () => {
   })
 })
 
+describe('blog creation validation', () => {
+  beforeEach(async () => {
+    await Blog.deleteMany({})
+    await Blog.insertMany(helper.initialBlogs)
+  })
+
+  test('fails with 400 if title is missing', async () => {
+    const newBlog = {
+      author: 'No Title',
+      url: 'http://example.com/notitle',
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+  })
+
+  test('fails with 400 if url is missing', async () => {
+    const newBlog = {
+      title: 'No URL',
+      author: 'No Url',
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
+  })
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
