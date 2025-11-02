@@ -66,9 +66,29 @@ describe('addition of a new blog', () => {
     const titles = blogsAtEnd.map(b => b.title)
     assert.ok(titles.includes('Creating blog via API'))
   })
+
+   test('defaults likes to 0 if the likes property is missing', async () => {
+    const newBlog = {
+      title: 'No likes provided',
+      author: 'Test Author',
+      url: 'http://example.com/nolikes'
+    }
+
+    const created = await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    assert.strictEqual(created.body.likes, 0)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    const saved = blogsAtEnd.find(b => b.title === 'No likes provided')
+    assert.ok(saved, 'blog should exist in DB')
+    assert.strictEqual(saved.likes, 0)
+  })
 })
 
 after(async () => {
-  // Penting: tutup koneksi Mongoose agar proses test selesai
   await mongoose.connection.close()
 })
