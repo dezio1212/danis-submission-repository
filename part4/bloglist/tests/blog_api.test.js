@@ -130,6 +130,25 @@ describe('addition of a new blog (requires token)', () => {
       .send(newBlog)        
       .expect(401)
   })
+
+  test('fails with 401 if token is invalid (POST)', async () => {
+  const invalidToken = 'invalid.token.string'
+
+  await api
+    .post('/api/blogs')
+    .set('Authorization', `Bearer ${invalidToken}`)
+    .send({
+      title: 'Should not be created',
+      author: 'Invalid',
+      url: 'http://example.com/invalid'
+    })
+    .expect(401)
+
+  const blogsAtEnd = await helper.blogsInDb()
+  const titles = blogsAtEnd.map(b => b.title)
+  assert.ok(!titles.includes('Should not be created'))
+})
+
 })
 
 describe('blog creation validation (requires token after 4.19)', () => {
@@ -303,6 +322,18 @@ describe('deletion with auth and ownership (4.21)', () => {
       .delete(`/api/blogs/${blogId}`)
       .expect(401)
   })
+
+  test('fails with 401 when token is invalid (DELETE)', async () => {
+  const invalidToken = 'invalid.token.string'
+  await api
+    .delete(`/api/blogs/${blogId}`)
+    .set('Authorization', `Bearer ${invalidToken}`)
+    .expect(401)
+
+  const blogsAtEnd = await helper.blogsInDb()
+  assert.ok(blogsAtEnd.find(b => b.id === blogId))
+})
+
 })
 
 after(async () => {
