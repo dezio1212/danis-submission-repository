@@ -51,7 +51,7 @@ const listWithManyBlogs = [
     url: 'http://example.com/a4',
     likes: 10
   }
-] // total likes = 34, favorit = a3 (12)
+] // total likes = 34, favorit = a3 (12), mostBlogs = Dev Two (2)
 
 // --- 4.4: totalLikes ---
 describe('total likes', () => {
@@ -94,5 +94,23 @@ describe('favorite blog', () => {
       author: 'Dev Three',
       likes: 12
     })
+  })
+})
+
+// --- 4.6: mostBlogs ---
+describe('most blogs (author with most entries)', () => {
+  test('of empty list is null', () => {
+    const result = listHelper.mostBlogs(listEmpty)
+    assert.strictEqual(result, null)
+  })
+
+  test('when list has only one blog returns that author with blogs=1', () => {
+    const result = listHelper.mostBlogs(listWithOneBlog)
+    assert.deepStrictEqual(result, { author: 'Author A', blogs: 1 })
+  })
+
+  test('of a bigger list returns the author with highest blog count', () => {
+    const result = listHelper.mostBlogs(listWithManyBlogs)
+    assert.deepStrictEqual(result, { author: 'Dev Two', blogs: 2 })
   })
 })
