@@ -2,15 +2,10 @@ const { Schema, model } = require('mongoose')
 
 const userSchema = new Schema(
   {
-    username: { type: String, required: true, unique: true, trim: true },
+    username: { type: String, required: true, unique: true, trim: true, minLength: 3 },
     name: { type: String, trim: true },
     passwordHash: { type: String, required: true },
-    blogs: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Blog'
-      }
-    ]
+    blogs: [{ type: Schema.Types.ObjectId, ref: 'Blog' }]
   },
   { timestamps: true }
 )

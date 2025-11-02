@@ -19,6 +19,10 @@ const errorHandler = (error, _request, response, next) => {
     return response.status(400).send({ error: 'malformatted id' })
   } else if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message })
+  } else if (isDupCode || hasDupWriteErr || error?.name === 'MongoBulkWriteError') {
+    const fields = error?.keyPattern ? Object.keys(error.keyPattern) : []
+    const field = fields[0] || 'username'
+    return response.status(400).json({ error: `${field} must be unique` })
   }
 
   next(error)

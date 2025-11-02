@@ -42,6 +42,82 @@ describe('when there is initially one user in db', () => {
   })
 })
 
+describe('user creation validations', () => {
+  beforeEach(async () => {
+    await User.deleteMany({})
+    const passwordHash = await bcrypt.hash('sekret', 10)
+    await new User({ username: 'root', name: 'Superuser', passwordHash }).save()
+  })
+
+  test('fails with status 400 if username is shorter than 3 chars', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const newUser = { username: 'ab', name: 'Too Short', password: 'validpwd' }
+
+    const res = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    assert.match(res.body.error, /username/i)
+
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+  })
+
+  test('fails with status 400 if password is missing', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const newUser = { username: 'validuser', name: 'No Password' } 
+
+    const res = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    assert.match(res.body.error, /password/i)
+
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+  })
+
+  test('fails with status 400 if password is shorter than 3 chars', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const newUser = { username: 'validuser', name: 'Short Pwd', password: 'pw' }
+
+    const res = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    assert.match(res.body.error, /password.*3/i)
+
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+  })
+
+  test('fails with status 400 if username is already taken', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const newUser = { username: 'root', name: 'Duplicate', password: 'strongpwd' }
+
+    const res = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    assert.match(res.body.error, /(unique|duplicate)/i)
+
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+  })
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
