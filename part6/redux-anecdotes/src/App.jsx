@@ -1,5 +1,6 @@
 import { useDispatch } from 'react-redux'
 import AnecdoteList from './components/AnecdoteList'
+import { createAnecdote } from './reducers/anecdoteReducer'
 
 export default function App() {
   const dispatch = useDispatch()
@@ -10,10 +11,7 @@ export default function App() {
     if (!content.trim()) return
     e.target.anecdote.value = ''
 
-    dispatch({
-      type: 'NEW_ANECDOTE',
-      payload: { content },
-    })
+    dispatch(createAnecdote(content))
   }
 
   return (
@@ -24,7 +22,7 @@ export default function App() {
         <input name='anecdote' placeholder='Write an anecdote....'/>
         <button type='submit'>add</button>
       </form>
-      
+
       <AnecdoteList />
     </div>
   )

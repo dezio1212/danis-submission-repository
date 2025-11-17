@@ -31,3 +31,13 @@ const anecdoteReducer = (state = initialState, action) => {
 }
 
 export default anecdoteReducer
+
+export const createAnecdote = (content) => ({
+  type: 'NEW_ANECDOTE',
+  payload: { content },
+})
+
+export const voteOf = (id) => ({
+  type: 'VOTE',
+  payload: { id },
+})

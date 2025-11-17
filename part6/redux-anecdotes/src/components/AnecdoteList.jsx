@@ -1,4 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux'
+import { voteOf } from '../reducers/anecdoteReducer'
 
 export default function AnecdoteList() {
   const dispatch = useDispatch()
@@ -8,7 +9,7 @@ export default function AnecdoteList() {
   )
 
   const vote = (id) => {
-    dispatch({ type: 'VOTE', payload: { id } })
+    dispatch(voteOf(id))
   }
 
   if (!anecdotes.length) return <p>No anecdotes.</p>
