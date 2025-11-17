@@ -1,3 +1,4 @@
+import AnecdoteForm from './components/AnecdoteForm'
 import AnecdoteList from './components/AnecdoteList'
 
 export default function App() {
