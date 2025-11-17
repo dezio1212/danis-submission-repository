@@ -17,6 +17,10 @@ const initialState = initialAnecdotes.map(asObject)
 
 const anecdoteReducer = (state = initialState, action) => {
   switch (action.type) {
+    case 'NEW_ANECDOTE': {
+      const newItem = asObject(action.payload.content)
+      return state.concat(newItem)
+    }
     default:
       return state
   }
